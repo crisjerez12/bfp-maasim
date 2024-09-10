@@ -22,7 +22,7 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 
-export function Cover({ children, className }: SidebarProps) {
+export function Cover({ children }: SidebarProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showTitle, setShowTitle] = useState(false);
   const pathname = usePathname();
