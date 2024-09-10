@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+// Define the types for the props passed to the Cover component
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
@@ -70,42 +71,42 @@ export function Cover({ children, className }: SidebarProps) {
         <ScrollArea className="flex-1">
           <nav className="flex flex-col gap-2 p-2">
             <NavItem
-              href="/"
+              href="/dashboard"
               icon={LayoutDashboard}
               title="Dashboard"
               sidebarOpen={sidebarOpen}
-              active={pathname === "/"}
+              active={pathname === "/dashboard"}
             />
             <NavItem
-              href="/due"
+              href="/dashboard/due"
               icon={Clock}
               title="Due"
               sidebarOpen={sidebarOpen}
-              active={pathname === "/due"}
+              active={pathname === "/dashboard/due"}
             />
             <NavItem
-              href="/transactions"
+              href="/dashboard/transactions"
               icon={FileText}
               title="Transactions"
               sidebarOpen={sidebarOpen}
-              active={pathname === "/transactions"}
+              active={pathname === "/dashboard/transactions"}
             />
             <NavItem
-              href="/establishments"
+              href="/dashboard/establishments"
               icon={Building2}
               title="Establishments"
               sidebarOpen={sidebarOpen}
-              active={pathname === "/establishments"}
+              active={pathname === "/dashboard/establishments"}
             />
           </nav>
         </ScrollArea>
         <div className="p-4">
           <NavItem
-            href="/account"
+            href="/dashboard/account"
             icon={User}
             title="Account"
             sidebarOpen={sidebarOpen}
-            active={pathname === "/account"}
+            active={pathname === "/dashboard/account"}
           />
           <Button
             variant="ghost"
@@ -128,13 +129,28 @@ export function Cover({ children, className }: SidebarProps) {
             <Flame className="h-8 w-8 text-red-600" />
           </div>
         </header>
-        <div className="p-6">{children}</div>
+        <div className="p-6 text-red-950">{children}</div>
       </main>
     </div>
   );
 }
 
-function NavItem({ href, icon: Icon, title, sidebarOpen, active }) {
+// Define types for NavItem props
+interface NavItemProps {
+  href: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  title: string;
+  sidebarOpen: boolean;
+  active: boolean;
+}
+
+function NavItem({
+  href,
+  icon: Icon,
+  title,
+  sidebarOpen,
+  active,
+}: NavItemProps) {
   return (
     <Link
       href={href}
@@ -156,17 +172,17 @@ function NavItem({ href, icon: Icon, title, sidebarOpen, active }) {
   );
 }
 
-function getPageTitle(pathname: string) {
+function getPageTitle(pathname: string): string {
   switch (pathname) {
-    case "/":
+    case "/dashboard":
       return "Dashboard";
-    case "/due":
+    case "/dashboard/due":
       return "Due Establishments";
-    case "/transactions":
+    case "/dashboard/transactions":
       return "Recent Transactions";
-    case "/establishments":
+    case "/dashboard/establishments":
       return "Establishments";
-    case "/account":
+    case "/dashboard/account":
       return "Account Settings";
     default:
       return "BFP-FIRE SAFETY";
