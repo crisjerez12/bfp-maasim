@@ -1,4 +1,5 @@
-import { Cover } from "@/components/cover";
+import Cover from "@/components/cover";
+import DueEstablishmentsWarning from "@/components/due-establishments-warning";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -14,6 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <DueEstablishmentsWarning />
         <Cover>{children}</Cover>
       </body>
     </html>

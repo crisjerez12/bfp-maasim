@@ -7,22 +7,29 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Clock,
-  FileText,
   Building2,
   User,
   LogOut,
   Menu,
   Flame,
+  PlusCircle,
+  Archive,
+  Minus,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-// Define the types for the props passed to the Cover component
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
-
-export function Cover({ children }: SidebarProps) {
+interface NavItemProps {
+  href: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; // Icon as a React component
+  title: string;
+  sidebarOpen: boolean;
+  active: boolean;
+}
+export default function Cover({ children }: SidebarProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showTitle, setShowTitle] = useState(false);
   const pathname = usePathname();
@@ -30,7 +37,7 @@ export function Cover({ children }: SidebarProps) {
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
     if (!sidebarOpen) {
-      setTimeout(() => setShowTitle(true), 100);
+      setTimeout(() => setShowTitle(true), 150);
     } else {
       setShowTitle(false);
     }
@@ -41,10 +48,10 @@ export function Cover({ children }: SidebarProps) {
   }, []);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-100">
+    <div className="flex h-screen overflow-hidden bg-gray-900 text-gray-100">
       <aside
         className={cn(
-          "relative z-20 flex flex-col h-full bg-red-900 text-white transition-all duration-300 ease-in-out",
+          "relative z-20 flex flex-col h-full bg-gray-800 text-gray-100 transition-all duration-300 ease-in-out",
           sidebarOpen ? "w-64" : "w-16"
         )}
       >
@@ -62,7 +69,7 @@ export function Cover({ children }: SidebarProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-red-800 transition-colors duration-200"
+            className="text-gray-100 hover:bg-gray-700 hover:text-blue-400 transition-colors duration-200"
             onClick={toggleSidebar}
           >
             <Menu className="h-6 w-6" />
@@ -84,20 +91,38 @@ export function Cover({ children }: SidebarProps) {
               sidebarOpen={sidebarOpen}
               active={pathname === "/dashboard/due"}
             />
-            <NavItem
-              href="/dashboard/transactions"
-              icon={FileText}
-              title="Transactions"
-              sidebarOpen={sidebarOpen}
-              active={pathname === "/dashboard/transactions"}
-            />
-            <NavItem
-              href="/dashboard/establishments"
-              icon={Building2}
-              title="Establishments"
-              sidebarOpen={sidebarOpen}
-              active={pathname === "/dashboard/establishments"}
-            />
+            <div className="mt-2">
+              <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">
+                {sidebarOpen ? (
+                  "Transactions"
+                ) : (
+                  <Minus className="-mt-6 h-7 w-7" />
+                )}
+              </div>
+              <div className={cn(sidebarOpen ? "ml-2 space-y-2" : "space-y-2")}>
+                <NavItem
+                  href="/dashboard/new"
+                  icon={PlusCircle}
+                  title="New Establishment"
+                  sidebarOpen={sidebarOpen}
+                  active={pathname === "/dashboard/new"}
+                />
+                <NavItem
+                  href="/dashboard/establishments"
+                  icon={Building2}
+                  title="Establishment"
+                  sidebarOpen={sidebarOpen}
+                  active={pathname === "/dashboard/establishments"}
+                />
+                <NavItem
+                  href="/dashboard/archives"
+                  icon={Archive}
+                  title="Archives"
+                  sidebarOpen={sidebarOpen}
+                  active={pathname === "/dashboard/archives"}
+                />
+              </div>
+            </div>
           </nav>
         </ScrollArea>
         <div className="p-4">
@@ -111,7 +136,7 @@ export function Cover({ children }: SidebarProps) {
           <Button
             variant="ghost"
             className={cn(
-              "w-full justify-start text-white hover:bg-red-800 transition-colors duration-200",
+              "mt-2 w-full justify-start text-gray-100 hover:bg-gray-700 hover:text-blue-400 transition-colors duration-200",
               !sidebarOpen && "justify-center"
             )}
           >
@@ -120,28 +145,19 @@ export function Cover({ children }: SidebarProps) {
           </Button>
         </div>
       </aside>
-      <main className="flex-1 overflow-y-auto bg-gray-50">
-        <header className="bg-white shadow-sm sticky top-0 z-10">
+      <main className="flex-1 overflow-y-auto bg-gray-900">
+        <header className="bg-gray-800 shadow-md sticky top-0 z-10">
           <div className="flex items-center justify-between px-6 py-4">
-            <h1 className="text-2xl font-semibold text-gray-800">
+            <h1 className="text-2xl font-semibold text-gray-100">
               {getPageTitle(pathname)}
             </h1>
-            <Flame className="h-8 w-8 text-red-600" />
+            <Flame className="h-8 w-8 text-blue-400" />
           </div>
         </header>
-        <div className="p-6 text-red-950">{children}</div>
+        <div className="p-6">{children}</div>
       </main>
     </div>
   );
-}
-
-// Define types for NavItem props
-interface NavItemProps {
-  href: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  title: string;
-  sidebarOpen: boolean;
-  active: boolean;
 }
 
 function NavItem({
@@ -157,8 +173,8 @@ function NavItem({
       className={cn(
         "flex items-center py-2 px-3 rounded-lg transition-colors duration-200",
         active
-          ? "bg-red-800 text-white"
-          : "text-red-100 hover:bg-red-800 hover:text-white",
+          ? "bg-blue-600 text-white"
+          : "text-gray-300 hover:bg-gray-700 hover:text-blue-400",
         !sidebarOpen && "justify-center"
       )}
     >
@@ -172,16 +188,18 @@ function NavItem({
   );
 }
 
-function getPageTitle(pathname: string): string {
+function getPageTitle(pathname: string) {
   switch (pathname) {
     case "/dashboard":
       return "Dashboard";
     case "/dashboard/due":
       return "Due Establishments";
-    case "/dashboard/transactions":
-      return "Recent Transactions";
+    case "/dashboard/new":
+      return "New Establishment";
     case "/dashboard/establishments":
       return "Establishments";
+    case "/dashboard/archives":
+      return "Archives";
     case "/dashboard/account":
       return "Account Settings";
     default:
