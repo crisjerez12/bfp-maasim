@@ -90,3 +90,36 @@ body {
     @apply bg-background text-foreground;
   }
 }
+/* Add this to your global CSS file if not already present */
+.border-b {
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+
+.border-b:focus,
+.border-b:active {
+  outline: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  box-shadow: none;
+}
+
+/* Remove right icons for number inputs */
+.no-spinner::-webkit-inner-spin-button,
+.no-spinner::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinner {
+  -moz-appearance: textfield;
+}
+*:focus {
+  outline: none;
+}
+/* Style radio buttons */
+.radio-group-item {
+  background-color: white;
+}
