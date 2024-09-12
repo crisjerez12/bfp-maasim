@@ -171,9 +171,9 @@ function NavItem({
     <Link
       href={href}
       className={cn(
-        "flex items-center py-2 px-3 rounded-lg transition-colors duration-200",
+        "flex items-center py-2 px-3 rounded-r-md  transition-colors duration-200",
         active
-          ? "bg-blue-600 text-white"
+          ? "border-l-4 border-blue-600 bg-gray-950/40 text-white"
           : "text-gray-300 hover:bg-gray-700 hover:text-blue-400",
         !sidebarOpen && "justify-center"
       )}
