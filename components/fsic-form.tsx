@@ -80,7 +80,7 @@ export default function FsicForm() {
               id="fsicNumber"
               minLength={4}
               maxLength={5}
-              className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg"
+              className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg"
               placeholder="Enter FSIC Number"
             />
           </div>
@@ -93,7 +93,7 @@ export default function FsicForm() {
               id="today"
               value={format(today, "yyyy-MM-dd")}
               readOnly
-              className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg"
+              className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg"
             />
           </div>
           <div>
@@ -138,31 +138,31 @@ export default function FsicForm() {
             <input
               type="text"
               placeholder="Establishment Name"
-              className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg"
+              className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg"
             />
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <input
                 type="text"
                 placeholder="Owner"
-                className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg"
+                className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg"
               />
               <input
                 type="text"
                 placeholder="Representative Name"
-                className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg"
+                className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg"
               />
               <input
                 type="text"
                 placeholder="Trade Name"
-                className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg"
+                className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg"
               />
               <div className="flex">
                 <input
                   type="text"
                   placeholder="Total Build Area"
-                  className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg"
+                  className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg"
                 />
-                <span className="bg-[#2a2f3e] border-b-2 border-l-0 border-gray-600  p-3 text-lg">
+                <span className="bg-transparent border-b-2 border-l-0 border-gray-600  p-3 text-lg">
                   sqm
                 </span>
               </div>
@@ -171,14 +171,16 @@ export default function FsicForm() {
               type="number"
               placeholder="Number of Occupant"
               min="0"
-              className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg"
+              className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg"
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="relative">
-                <select className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg appearance-none">
-                  <option value="">Type of Occupancy</option>
+                <select className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg appearance-none">
+                  <option className="bg-[#2a2f3e]" value="">
+                    Type of Occupancy
+                  </option>
                   {occupancyTypes.map((type, index) => (
-                    <option key={index} value={type}>
+                    <option className="bg-[#2a2f3e]" key={index} value={type}>
                       {type}
                     </option>
                   ))}
@@ -186,10 +188,12 @@ export default function FsicForm() {
                 <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-6 w-6" />
               </div>
               <div className="relative">
-                <select className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg appearance-none">
-                  <option value="">Type of Building</option>
+                <select className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg appearance-none">
+                  <option className="bg-[#2a2f3e]" value="">
+                    Type of Building
+                  </option>
                   {buildingTypes.map((type, index) => (
-                    <option key={index} value={type}>
+                    <option className="bg-[#2a2f3e]" key={index} value={type}>
                       {type}
                     </option>
                   ))}
@@ -208,10 +212,12 @@ export default function FsicForm() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="relative md:col-span-1">
-                <select className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg appearance-none">
-                  <option value="">Nature of Business</option>
+                <select className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg appearance-none">
+                  <option className="bg-[#2a2f3e]" value="">
+                    Nature of Business
+                  </option>
                   {businessNatures.map((nature, index) => (
-                    <option key={index} value={nature}>
+                    <option className="bg-[#2a2f3e]" key={index} value={nature}>
                       {nature}
                     </option>
                   ))}
@@ -221,24 +227,24 @@ export default function FsicForm() {
               <input
                 type="text"
                 placeholder="Business Identification No."
-                className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg md:col-span-3"
+                className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg md:col-span-3"
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <input
                 type="text"
                 placeholder="Tax Identification No."
-                className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg"
+                className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg"
               />
               <input
                 type="text"
                 placeholder="DTI No."
-                className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg"
+                className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg"
               />
               <input
                 type="text"
                 placeholder="Securities and Exchange Commission No."
-                className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg"
+                className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg"
               />
             </div>
           </div>
@@ -372,10 +378,12 @@ export default function FsicForm() {
           </h2>
           <div className="space-y-6">
             <div className="relative">
-              <select className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg appearance-none">
-                <option value="">Select a barangay</option>
+              <select className="w-full bg-transparent border-b-2 border-gray-600  p-3 text-lg appearance-none">
+                <option className="bg-[#2a2f3e]" value="">
+                  Select a barangay
+                </option>
                 {barangays.map((barangay, index) => (
-                  <option key={index} value={barangay}>
+                  <option className="bg-[#2a2f3e]" key={index} value={barangay}>
                     {barangay}
                   </option>
                 ))}
@@ -385,7 +393,7 @@ export default function FsicForm() {
             <input
               type="text"
               placeholder="Blk No./Unit No./Name of Street/Name of Building"
-              className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg"
+              className="w-full bg-transparent  border-b-2 border-gray-600  p-3 text-lg"
             />
           </div>
         </div>
@@ -399,13 +407,13 @@ export default function FsicForm() {
             <input
               type="email"
               placeholder="Email Address"
-              className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg"
+              className="w-full bg-transparent  border-b-2 border-gray-600  p-3 text-lg"
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <input
                 type="tel"
                 placeholder="Landline Number"
-                className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg"
+                className="w-full bg-transparent  border-b-2 border-gray-600  p-3 text-lg"
               />
               <div className="flex">
                 <span className="bg-[#3b82f6] text-white border-b-2 border-[#3b82f6]  p-3 text-lg">
@@ -414,7 +422,7 @@ export default function FsicForm() {
                 <input
                   type="tel"
                   placeholder="Mobile Number"
-                  className="w-full bg-[#2a2f3e] border-b-2 border-gray-600  p-3 text-lg"
+                  className="w-full bg-transparent  border-b-2 border-gray-600  p-3 text-lg"
                 />
               </div>
             </div>
