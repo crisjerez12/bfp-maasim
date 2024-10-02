@@ -1,4 +1,6 @@
+import EstablishmentInspectionForm from "@/components/establishment-inspection-form";
+
 const EstablishmentsPage = () => {
-  return <div>EstablishmentsPage</div>;
+  return <EstablishmentInspectionForm />;
 };
 export default EstablishmentsPage;
