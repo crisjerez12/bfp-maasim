@@ -13,11 +13,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
-        <DueEstablishmentsWarning />
-        <Cover>{children}</Cover>
-      </body>
-    </html>
+    <>
+      <DueEstablishmentsWarning />
+      <Cover>{children}</Cover>
+    </>
   );
 }
