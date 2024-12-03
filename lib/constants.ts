@@ -1,4 +1,4 @@
-export const BARANGAY = [
+export const BARANGAY: string[] = [
   "Amsipit",
   "Bales",
   "Colon",
@@ -16,7 +16,7 @@ export const BARANGAY = [
   "Seven Hills",
   "Tinoto",
 ];
-export const TYPE_OF_OCCUPANCY = [
+export const TYPE_OF_OCCUPANCY: string[] = [
   "Business Occupancy",
   "Day Care",
   "Detention and Correctional Occupancy",
@@ -30,7 +30,7 @@ export const TYPE_OF_OCCUPANCY = [
   "Residential Occupancy",
   "Single and Two Family Dwellings",
 ];
-export const TYPE_OF_BUILDING = [
+export const TYPE_OF_BUILDING: string[] = [
   "Public Building",
   "Hospital",
   "High Rise",
@@ -38,9 +38,9 @@ export const TYPE_OF_BUILDING = [
   "Assembly",
 ];
 
-export const NATURE_OF_BUSINESS = ["RESIDENTIAL", "COMMERCIAL"];
+export const NATURE_OF_BUSINESS: string[] = ["RESIDENTIAL", "COMMERCIAL"];
 
-export const lastIssuanceOptions = [
+export const lastIssuanceOptions: string[] = [
   "Unknown",
   "Notice of Disapproval (occupancy permit)",
   "Abatement Order",

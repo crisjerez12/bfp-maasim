@@ -1,62 +1,192 @@
 "use server";
 
-import { z } from "zod";
+import {
+  EstablishmentSchema,
+  Establishment,
+  EstablishmentDocument,
+} from "@/lib/models/establishment";
+import { revalidatePath } from "next/cache";
+import connectToMongoDB from "@/lib/connection";
 
-const FormSchema = z.object({
-  fsicNumber: z.string().min(4).max(5),
-  lastIssuance: z.string(),
-  establishmentName: z.string().min(1, "Establishment name is required"),
-  owner: z.string().min(1, "Owner name is required"),
-  representativeName: z.string().optional(),
-  tradeName: z.string().optional(),
-  totalBuildArea: z
-    .number()
-    .min(0, "Total build area must be a positive number"),
-  numberOfOccupants: z
-    .number()
-    .int()
-    .min(0, "Number of occupants must be a positive integer"),
-  typeOfOccupancy: z.string().min(1, "Type of occupancy is required"),
-  typeOfBuilding: z.string().min(1, "Type of building is required"),
-  natureOfBusiness: z.string().min(1, "Nature of business is required"),
-  businessIdentificationNo: z.string().optional(),
-  taxIdentificationNo: z.string().optional(),
-  dtiNo: z.string().optional(),
-  secNo: z.string().optional(),
-  highRise: z.boolean(),
-  eminentDanger: z.boolean(),
-  lastIssuanceType: z.string(),
-  lastIssuanceDate: z.string().optional(),
-  barangay: z.string().min(1, "Barangay is required"),
-  address: z.string().min(1, "Address is required"),
-  email: z.string().email("Invalid email address"),
-  landline: z.string().optional(),
-  mobile: z.string().min(10, "Mobile number must be at least 10 digits"),
-});
+export async function createFsicEntry(formData: FormData) {
+  await connectToMongoDB();
+  const rawFormData = Object.fromEntries(formData.entries());
 
-export async function createFsicEntry(prevState: any, formData: FormData) {
-  console.log(formData);
-  // try {
-  //   const parsedFields = Object.fromEntries(formData);
-  //   const validatedFields = FormSchema.safeParse(parsedFields);
-  //   if (!validatedFields.success) {
-  //     return {
-  //       success: false,
-  //       message: "Validation failed",
-  //       errors: validatedFields.error.flatten().fieldErrors,
-  //     };
-  //   }
-  //   // Here you would typically save the data to your database
-  //   // For this example, we'll just simulate a successful save
-  //   await new Promise((resolve) => setTimeout(resolve, 1000));
-  //   return {
-  //     success: true,
-  //     message: "FSIC entry created successfully",
-  //   };
-  // } catch (error) {
-  //   return {
-  //     success: false,
-  //     message: "An unexpected error occurred",
-  //   };
-  // }
+  // Convert string values to appropriate types
+  const parsedData = {
+    ...rawFormData,
+    fsicNumber: Number(rawFormData.fsicNumber),
+    lastIssuance: new Date(rawFormData.lastIssuance as string),
+    totalBuildArea: Number(rawFormData.totalBuildArea),
+    numberOfOccupants: Number(rawFormData.numberOfOccupants),
+    isHighRise: rawFormData.highRise === "yes",
+    isInEminentDanger: rawFormData.eminentDanger === "yes",
+    lastIssuanceDate: rawFormData.lastIssuanceDate
+      ? new Date(rawFormData.lastIssuanceDate as string)
+      : undefined,
+  };
+
+  const result = EstablishmentSchema.safeParse(parsedData);
+
+  if (!result.success) {
+    const limitedErrors = result.error.errors.slice(0, 3);
+    const errorMessages = limitedErrors.map((err) => err.message).join(", ");
+    return { success: false, message: errorMessages };
+  }
+
+  try {
+    const existingEstablishment = await Establishment.findOne({
+      fsicNumber: result.data.fsicNumber,
+    });
+    if (existingEstablishment) {
+      return {
+        success: false,
+        message: `An establishment with FSIC number ${result.data.fsicNumber} already exists.`,
+      };
+    }
+
+    const newEstablishment = new Establishment(result.data);
+    await newEstablishment.save();
+
+    revalidatePath("/dashboard/new");
+    return { success: true, message: "FSIC entry created successfully" };
+  } catch (error) {
+    console.error("Database error:", error);
+    return {
+      success: false,
+      message: "An error occurred while creating the FSIC entry",
+    };
+  }
+}
+
+export async function updateFsicEntry(formData: FormData) {
+  await connectToMongoDB();
+  const rawFormData = Object.fromEntries(formData.entries());
+
+  const id = rawFormData.id as string;
+  delete rawFormData.id;
+
+  const parsedData = {
+    ...rawFormData,
+    fsicNumber: Number(rawFormData.fsicNumber),
+    lastIssuance: new Date(rawFormData.lastIssuance as string),
+    totalBuildArea: Number(rawFormData.totalBuildArea),
+    numberOfOccupants: Number(rawFormData.numberOfOccupants),
+    isHighRise: rawFormData.highRise === "yes",
+    isInEminentDanger: rawFormData.eminentDanger === "yes",
+    mobile: rawFormData.mobile as string,
+    lastIssuanceDate: rawFormData.lastIssuanceDate
+      ? new Date(rawFormData.lastIssuanceDate as string)
+      : undefined,
+  };
+
+  if (typeof parsedData.mobile === "string") {
+    parsedData.mobile = parsedData.mobile.startsWith("9")
+      ? `+63${parsedData.mobile}`
+      : parsedData.mobile;
+  }
+
+  const mobileRegex = /^(\+639|9)\d{9}$/;
+  if (parsedData.mobile && !mobileRegex.test(parsedData.mobile)) {
+    return {
+      success: false,
+      message:
+        "Invalid mobile number format. It should start with '+639' or '9' followed by 9 digits.",
+    };
+  }
+
+  try {
+    const existingEstablishment = await Establishment.findById(id);
+    if (!existingEstablishment) {
+      return {
+        success: false,
+        message: `Establishment with ID ${id} not found.`,
+      };
+    }
+
+    const validationResult = EstablishmentSchema.safeParse(parsedData);
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(
+        (err) => `${err.path.join(".")}: ${err.message}`
+      );
+      return {
+        success: false,
+        message: `Validation failed: ${errors.join(", ")}`,
+      };
+    }
+
+    const updatedEstablishment = (await Establishment.findByIdAndUpdate(
+      id,
+      validationResult.data,
+      { new: true, runValidators: true }
+    )) as EstablishmentDocument | null;
+
+    if (!updatedEstablishment) {
+      return {
+        success: false,
+        message: "Failed to update the establishment.",
+      };
+    }
+
+    revalidatePath("/dashboard");
+    return {
+      success: true,
+      message: "FSIC entry updated successfully",
+      data: updatedEstablishment,
+    };
+  } catch (error) {
+    console.error("Database error:", error);
+    return {
+      success: false,
+      message: "An error occurred while updating the FSIC entry",
+    };
+  }
+}
+
+export async function restoreEstablishment(id: string) {
+  await connectToMongoDB();
+
+  try {
+    const establishment = await Establishment.findById(id);
+
+    if (!establishment) {
+      return { success: false, message: "Establishment not found" };
+    }
+
+    establishment.isActive = true;
+    await establishment.save();
+
+    revalidatePath("/dashboard/archives");
+    return { success: true, message: "Establishment restored successfully" };
+  } catch (error) {
+    console.error("Error restoring establishment:", error);
+    return {
+      success: false,
+      message: "An error occurred while restoring the establishment",
+    };
+  }
+}
+
+export async function deleteEstablishment(id: string) {
+  await connectToMongoDB();
+
+  try {
+    const establishment = await Establishment.findById(id);
+
+    if (!establishment) {
+      return { success: false, message: "Establishment not found" };
+    }
+
+    establishment.isActive = false;
+    await establishment.save();
+
+    revalidatePath("/dashboard");
+    return { success: true, message: "Establishment deleted successfully" };
+  } catch (error) {
+    console.error("Error deleting establishment:", error);
+    return {
+      success: false,
+      message: "An error occurred while deleting the establishment",
+    };
+  }
 }

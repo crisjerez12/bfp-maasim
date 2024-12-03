@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { Clipboard, Building2, Users, MapPin, Phone } from "lucide-react";
 import {
   BARANGAY,
@@ -11,23 +12,78 @@ import {
 } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
 import { validateDates } from "@/lib/functions";
-import { createFsicEntry } from "@/app/actions/establishment-actions";
+import { updateFsicEntry } from "@/app/actions/establishment-actions";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function FsicForm() {
-  const [isHighRise, setIsHighRise] = useState<boolean>(false);
-  const [isInEminentDanger, setIsInEminentDanger] = useState<boolean>(false);
-  const [lastIssuanceType, setLastIssuanceType] = useState<string>("Unknown");
-  const [isLastIssuanceUnknown, setIsLastIssuanceUnknown] =
-    useState<boolean>(true);
-  const [lastIssuanceDate, setLastIssuanceDate] = useState<string>("");
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+interface FSICData {
+  fsicNumber: number;
+  lastIssuance: string;
+  establishmentName: string;
+  owner: string;
+  representativeName: string;
+  tradeName: string;
+  totalBuildArea: number;
+  numberOfOccupants: number;
+  typeOfOccupancy: string;
+  typeOfBuilding: string;
+  natureOfBusiness: string;
+  businessIdentificationNo: string;
+  taxIdentificationNo: string;
+  dtiNo: string;
+  secNo: string;
+  isHighRise: boolean;
+  isInEminentDanger: boolean;
+  lastIssuanceType: string;
+  barangay: string;
+  address: string;
+  email: string;
+  landline: string;
+  mobile: string;
+}
+
+export default function FsicFormEdit() {
+  const [fsicData, setFsicData] = useState<FSICData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const [key, setKey] = useState(+new Date());
+  const params = useParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`/api/fsic/${params.id}`);
+        const data = await response.json();
+        if (data.success) {
+          setFsicData(data.data);
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to fetch FSIC data",
+          });
+        }
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An unexpected error occurred while fetching data",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [params.id, toast]);
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
 
     const formData = new FormData(event.currentTarget);
+    formData.append("id", params.id as string);
+
     const dateError = validateDates(formData);
     if (dateError) {
       toast({
@@ -40,20 +96,14 @@ export default function FsicForm() {
     }
 
     try {
-      const response = await createFsicEntry(formData);
+      const response = await updateFsicEntry(formData);
       if (response.success) {
         toast({
           title: "Success",
           variant: "success",
           description: response.message,
         });
-        setKey(+new Date());
-        setIsHighRise(false);
-        setIsInEminentDanger(false);
-        setLastIssuanceType("Unknown");
-        setIsLastIssuanceUnknown(true);
-        setLastIssuanceDate("");
-        // Optionally reset form or redirect here
+        router.push(`/dashboard/establishments/${params.id}`);
       } else {
         toast({
           variant: "destructive",
@@ -71,15 +121,18 @@ export default function FsicForm() {
       setIsSubmitting(false);
     }
   };
+  if (isLoading) {
+    return <SkeletonForm />;
+  }
+
+  if (!fsicData) {
+    return <div className="text-white">Failed to load FSIC data.</div>;
+  }
 
   return (
     <div className="min-h-screen text-white p-8">
-      <form
-        key={key}
-        className="max-w-6xl mx-auto space-y-8"
-        onSubmit={handleSubmit}
-      >
-        <div className="flex justify-between  gap-6">
+      <form className="max-w-6xl mx-auto space-y-8" onSubmit={handleSubmit}>
+        <div className="flex justify-between gap-6">
           <div>
             <label htmlFor="fsicNumber" className="block mb-2 text-lg">
               FSIC Number
@@ -94,6 +147,8 @@ export default function FsicForm() {
               maxLength={5}
               className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
               placeholder="Enter FSIC Number"
+              defaultValue={fsicData.fsicNumber}
+              disabled={isSubmitting}
             />
           </div>
           <div>
@@ -104,9 +159,9 @@ export default function FsicForm() {
               type="date"
               id="lastIssuance"
               name="lastIssuance"
-              value={lastIssuanceDate}
-              onChange={(e) => setLastIssuanceDate(e.target.value)}
+              defaultValue={fsicData.lastIssuance.split("T")[0]}
               className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+              disabled={isSubmitting}
             />
           </div>
         </div>
@@ -122,6 +177,8 @@ export default function FsicForm() {
               name="establishmentName"
               placeholder="Establishment Name"
               className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+              defaultValue={fsicData.establishmentName}
+              disabled={isSubmitting}
             />
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <input
@@ -129,18 +186,24 @@ export default function FsicForm() {
                 name="owner"
                 placeholder="Owner"
                 className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                defaultValue={fsicData.owner}
+                disabled={isSubmitting}
               />
               <input
                 type="text"
                 name="representativeName"
                 placeholder="Representative Name"
                 className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                defaultValue={fsicData.representativeName}
+                disabled={isSubmitting}
               />
               <input
                 type="text"
                 name="tradeName"
                 placeholder="Trade Name"
                 className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                defaultValue={fsicData.tradeName}
+                disabled={isSubmitting}
               />
               <div className="flex">
                 <input
@@ -148,6 +211,8 @@ export default function FsicForm() {
                   name="totalBuildArea"
                   placeholder="Total Build Area"
                   className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                  defaultValue={fsicData.totalBuildArea}
+                  disabled={isSubmitting}
                 />
                 <span className="bg-transparent border-b-2 border-l-0 border-gray-600 p-3 text-lg text-white">
                   sqm
@@ -160,6 +225,8 @@ export default function FsicForm() {
               placeholder="Number of Occupant"
               min="0"
               className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+              defaultValue={fsicData.numberOfOccupants}
+              disabled={isSubmitting}
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -170,6 +237,8 @@ export default function FsicForm() {
                   id="typeOfOccupancy"
                   name="typeOfOccupancy"
                   className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                  defaultValue={fsicData.typeOfOccupancy}
+                  disabled={isSubmitting}
                 >
                   <option value="">Select Type of Occupancy</option>
                   {TYPE_OF_OCCUPANCY.map((type, index) => (
@@ -187,6 +256,8 @@ export default function FsicForm() {
                   id="typeOfBuilding"
                   name="typeOfBuilding"
                   className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                  defaultValue={fsicData.typeOfBuilding}
+                  disabled={isSubmitting}
                 >
                   <option value="">Select Type of Building</option>
                   {TYPE_OF_BUILDING.map((type, index) => (
@@ -200,6 +271,7 @@ export default function FsicForm() {
           </div>
         </div>
 
+        {/* Business Information */}
         <div>
           <h2 className="text-2xl font-semibold text-white mb-6 flex items-center">
             <Building2 className="mr-2 h-6 w-6 text-white" />
@@ -218,6 +290,8 @@ export default function FsicForm() {
                   id="natureOfBusiness"
                   name="natureOfBusiness"
                   className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                  defaultValue={fsicData.natureOfBusiness}
+                  disabled={isSubmitting}
                 >
                   <option value="">Select Nature of Business</option>
                   {NATURE_OF_BUSINESS.map((nature, index) => (
@@ -232,6 +306,8 @@ export default function FsicForm() {
                 name="businessIdentificationNo"
                 placeholder="Business Identification No."
                 className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white md:col-span-3"
+                defaultValue={fsicData.businessIdentificationNo}
+                disabled={isSubmitting}
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -240,23 +316,30 @@ export default function FsicForm() {
                 name="taxIdentificationNo"
                 placeholder="Tax Identification No."
                 className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                defaultValue={fsicData.taxIdentificationNo}
+                disabled={isSubmitting}
               />
               <input
                 type="text"
                 name="dtiNo"
                 placeholder="DTI No."
                 className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                defaultValue={fsicData.dtiNo}
+                disabled={isSubmitting}
               />
               <input
                 type="text"
                 name="secNo"
                 placeholder="Securities and Exchange Commission No."
                 className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                defaultValue={fsicData.secNo}
+                disabled={isSubmitting}
               />
             </div>
           </div>
         </div>
 
+        {/* Additional Information */}
         <div>
           <h2 className="text-2xl font-semibold text-white mb-6 flex items-center">
             <Users className="mr-2 h-6 w-6 text-white" />
@@ -272,8 +355,8 @@ export default function FsicForm() {
                     className="form-radio text-[#3b82f6] h-5 w-5"
                     name="highRise"
                     value="yes"
-                    checked={isHighRise === true}
-                    onChange={() => setIsHighRise(true)}
+                    defaultChecked={fsicData.isHighRise}
+                    disabled={isSubmitting}
                   />
                   <span className="ml-2 text-lg">Yes</span>
                 </label>
@@ -283,8 +366,8 @@ export default function FsicForm() {
                     className="form-radio text-[#3b82f6] h-5 w-5"
                     name="highRise"
                     value="no"
-                    checked={isHighRise === false}
-                    onChange={() => setIsHighRise(false)}
+                    defaultChecked={!fsicData.isHighRise}
+                    disabled={isSubmitting}
                   />
                   <span className="ml-2 text-lg">No</span>
                 </label>
@@ -297,8 +380,8 @@ export default function FsicForm() {
                     className="form-radio text-[#3b82f6] h-5 w-5"
                     name="eminentDanger"
                     value="yes"
-                    checked={isInEminentDanger === true}
-                    onChange={() => setIsInEminentDanger(true)}
+                    defaultChecked={fsicData.isInEminentDanger}
+                    disabled={isSubmitting}
                   />
                   <span className="ml-2 text-lg">Yes</span>
                 </label>
@@ -308,8 +391,8 @@ export default function FsicForm() {
                     className="form-radio text-[#3b82f6] h-5 w-5"
                     name="eminentDanger"
                     value="no"
-                    checked={isInEminentDanger === false}
-                    onChange={() => setIsInEminentDanger(false)}
+                    defaultChecked={!fsicData.isInEminentDanger}
+                    disabled={isSubmitting}
                   />
                   <span className="ml-2 text-lg">No</span>
                 </label>
@@ -334,39 +417,19 @@ export default function FsicForm() {
                         className="form-radio text-[#3b82f6] h-5 w-5"
                         name="lastIssuanceType"
                         value={option}
-                        checked={lastIssuanceType === option}
-                        onChange={(e) => {
-                          setLastIssuanceType(e.target.value);
-                          setIsLastIssuanceUnknown(option === "Unknown");
-                        }}
+                        defaultChecked={fsicData.lastIssuanceType === option}
+                        disabled={isSubmitting}
                       />
                       <span className="text-base col-span-7">{option}</span>
                     </label>
                   ))}
                 </div>
               </div>
-              {isLastIssuanceUnknown && (
-                <div>
-                  <label
-                    htmlFor="lastIssuanceDate"
-                    className="block mb-2 text-lg"
-                  >
-                    Date of Last Issuance
-                  </label>
-                  <input
-                    type="date"
-                    id="lastIssuanceDate"
-                    name="lastIssuanceDate"
-                    value={lastIssuanceDate}
-                    onChange={(e) => setLastIssuanceDate(e.target.value)}
-                    className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>
 
+        {/* Address Information */}
         <div>
           <h2 className="text-2xl font-semibold text-white mb-6 flex items-center">
             <MapPin className="mr-2 h-6 w-6 text-white" />
@@ -381,6 +444,8 @@ export default function FsicForm() {
                 id="barangay"
                 name="barangay"
                 className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                defaultValue={fsicData.barangay}
+                disabled={isSubmitting}
               >
                 <option value="">Select a barangay</option>
                 {BARANGAY.map((barangay, index) => (
@@ -395,10 +460,13 @@ export default function FsicForm() {
               name="address"
               placeholder="Blk No./Unit No./Name of Street/Name of Building"
               className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+              defaultValue={fsicData.address}
+              disabled={isSubmitting}
             />
           </div>
         </div>
 
+        {/* Contact Information */}
         <div>
           <h2 className="text-2xl font-semibold text-white mb-6 flex items-center">
             <Phone className="mr-2 h-6 w-6 text-white" />
@@ -410,6 +478,8 @@ export default function FsicForm() {
               name="email"
               placeholder="Email Address"
               className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+              defaultValue={fsicData.email}
+              disabled={isSubmitting}
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <input
@@ -417,6 +487,8 @@ export default function FsicForm() {
                 name="landline"
                 placeholder="Landline Number"
                 className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                defaultValue={fsicData.landline}
+                disabled={isSubmitting}
               />
               <div className="flex">
                 <span className="bg-[#3b82f6] text-white border-b-2 border-[#3b82f6] p-3 text-lg">
@@ -427,6 +499,8 @@ export default function FsicForm() {
                   name="mobile"
                   placeholder="Mobile Number"
                   className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                  defaultValue={fsicData.mobile.replace("+63", "")}
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -435,11 +509,36 @@ export default function FsicForm() {
 
         <button
           type="submit"
-          className="w-full bg-[#3b82f6] text-white p-4 text-xl hover:bg-blue-600 transition-colors"
+          className="w-full bg-[#3b82f6] text-white p-4 text-xl hover:bg-blue-600 transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed"
+          disabled={isSubmitting}
         >
-          {isSubmitting ? "Saving Entry" : "Save Entry"}
+          {isSubmitting ? "Updating Entry..." : "Update Entry"}
         </button>
       </form>
+    </div>
+  );
+}
+
+function SkeletonForm() {
+  return (
+    <div className="min-h-screen text-white p-8">
+      <div className="max-w-6xl mx-auto space-y-8">
+        <div className="flex justify-between gap-6">
+          <Skeleton className="h-12 w-1/2" />
+          <Skeleton className="h-12 w-1/2" />
+        </div>
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="space-y-6">
+            <Skeleton className="h-8 w-1/4" />
+            <Skeleton className="h-12 w-full" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+        ))}
+        <Skeleton className="h-16 w-full" />
+      </div>
     </div>
   );
 }
