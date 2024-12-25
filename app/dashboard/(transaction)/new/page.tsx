@@ -10,8 +10,12 @@ import {
   TYPE_OF_OCCUPANCY,
 } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
-import { validateDates } from "@/lib/functions";
 import { createFsicEntry } from "@/app/actions/establishment-actions";
+import { useForm } from "react-hook-form";
+
+const FormField = ({ children }: { children: React.ReactNode }) => (
+  <div className="w-full">{children}</div>
+);
 
 export default function FsicForm() {
   const [isHighRise, setIsHighRise] = useState<boolean>(false);
@@ -23,23 +27,20 @@ export default function FsicForm() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const { toast } = useToast();
   const [key, setKey] = useState(+new Date());
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm();
+  const onSubmit = async (data: { [x: string]: string | Blob }) => {
     setIsSubmitting(true);
-
-    const formData = new FormData(event.currentTarget);
-    const dateError = validateDates(formData);
-    if (dateError) {
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: dateError,
-      });
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
+      const formData = new FormData();
+      Object.keys(data).forEach((key) => {
+        formData.append(key, data[key]);
+      });
+
       const response = await createFsicEntry(formData);
       if (response.success) {
         toast({
@@ -53,12 +54,15 @@ export default function FsicForm() {
         setLastIssuanceType("Unknown");
         setIsLastIssuanceUnknown(true);
         setLastIssuanceDate("");
-        // Optionally reset form or redirect here
+        reset();
       } else {
         toast({
           variant: "destructive",
           title: "Error",
-          description: response.message,
+          description:
+            response?.errorMessages?.[0]?.message ||
+            response.message ||
+            "An error occurred",
         });
       }
     } catch (error) {
@@ -77,38 +81,35 @@ export default function FsicForm() {
       <form
         key={key}
         className="max-w-6xl mx-auto space-y-8"
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
+        encType="multipart/form-data"
       >
-        <div className="flex justify-between  gap-6">
-          <div>
-            <label htmlFor="fsicNumber" className="block mb-2 text-lg">
-              FSIC Number
-            </label>
-            <input
-              type="number"
-              id="fsicNumber"
-              name="fsicNumber"
-              max={999999}
-              min={0}
-              minLength={4}
-              maxLength={5}
-              className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-              placeholder="Enter FSIC Number"
-            />
-          </div>
-          <div>
-            <label htmlFor="lastIssuance" className="block mb-2 text-lg">
-              Last Issuance
-            </label>
-            <input
-              type="date"
-              id="lastIssuance"
-              name="lastIssuance"
-              value={lastIssuanceDate}
-              onChange={(e) => setLastIssuanceDate(e.target.value)}
-              className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-            />
-          </div>
+        <div className="flex justify-between gap-6">
+          <FormField>
+            <div>
+              <input
+                type="number"
+                id="fsicNumber"
+                {...register("fsicNumber", {
+                  valueAsNumber: true,
+                  required: "FSIC Number is required",
+                })}
+                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                placeholder="Enter FSIC Number"
+                min={0}
+                max={999999}
+                minLength={4}
+                maxLength={5}
+              />
+              <div className="text-red-500 text-sm mt-1">
+                {errors.fsicNumber ? (
+                  (errors.fsicNumber.message as string)
+                ) : (
+                  <>&nbsp;</>
+                )}
+              </div>
+            </div>
+          </FormField>
         </div>
 
         <div>
@@ -117,86 +118,173 @@ export default function FsicForm() {
             General Information
           </h2>
           <div className="space-y-6">
-            <input
-              type="text"
-              name="establishmentName"
-              placeholder="Establishment Name"
-              className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-            />
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              <input
-                type="text"
-                name="owner"
-                placeholder="Owner"
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-              />
-              <input
-                type="text"
-                name="representativeName"
-                placeholder="Representative Name"
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-              />
-              <input
-                type="text"
-                name="tradeName"
-                placeholder="Trade Name"
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-              />
-              <div className="flex">
+            <FormField>
+              <div>
                 <input
                   type="text"
-                  name="totalBuildArea"
-                  placeholder="Total Build Area"
+                  {...register("establishmentName", {
+                    required: "Establishment Name is required",
+                  })}
+                  placeholder="Establishment Name"
                   className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
                 />
-                <span className="bg-transparent border-b-2 border-l-0 border-gray-600 p-3 text-lg text-white">
-                  sqm
-                </span>
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.establishmentName ? (
+                    (errors.establishmentName.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
               </div>
+            </FormField>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <FormField>
+                <input
+                  type="text"
+                  {...register("owner", { required: "Owner is required" })}
+                  placeholder="Owner"
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.owner ? (
+                    (errors.owner.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
+              <FormField>
+                <input
+                  type="text"
+                  {...register("representativeName", {
+                    required: "Representative Name is required",
+                  })}
+                  placeholder="Representative Name"
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.representativeName ? (
+                    (errors.representativeName.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
+              <FormField>
+                <input
+                  type="text"
+                  {...register("tradeName", {
+                    required: "Trade Name is required",
+                  })}
+                  placeholder="Trade Name"
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.tradeName ? (
+                    (errors.tradeName.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
+              <FormField>
+                <div className="flex flex-col">
+                  <div className="flex">
+                    <input
+                      type="number"
+                      {...register("totalBuildArea", {
+                        valueAsNumber: true,
+                        required: "Total Build Area is required",
+                      })}
+                      min="0"
+                      placeholder="Total Build Area"
+                      className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                    />
+                    <span className="bg-transparent border-b-2 border-l-0 border-gray-600 p-3 text-lg text-white">
+                      sqm
+                    </span>
+                  </div>
+                  <div className="text-red-500 text-sm mt-1">
+                    {errors.totalBuildArea ? (
+                      (errors.totalBuildArea.message as string)
+                    ) : (
+                      <>&nbsp;</>
+                    )}
+                  </div>
+                </div>
+              </FormField>
             </div>
-            <input
-              type="number"
-              name="numberOfOccupants"
-              placeholder="Number of Occupant"
-              min="0"
-              className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-            />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="typeOfOccupancy" className="block mb-2 text-lg">
-                  Type of Occupancy
-                </label>
-                <select
-                  id="typeOfOccupancy"
-                  name="typeOfOccupancy"
-                  className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                >
-                  <option value="">Select Type of Occupancy</option>
-                  {TYPE_OF_OCCUPANCY.map((type, index) => (
-                    <option key={index} value={type} className="bg-[#1f2937]">
-                      {type}
-                    </option>
-                  ))}
-                </select>
+            <FormField>
+              <input
+                type="number"
+                {...register("numberOfOccupants", {
+                  valueAsNumber: true,
+                  required: "Number of Occupants is required",
+                })}
+                min={0}
+                placeholder="Number of Occupant"
+                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+              />
+              <div className="text-red-500 text-sm mt-1">
+                {errors.numberOfOccupants ? (
+                  (errors.numberOfOccupants.message as string)
+                ) : (
+                  <>&nbsp;</>
+                )}
               </div>
-              <div>
-                <label htmlFor="typeOfBuilding" className="block mb-2 text-lg">
-                  Type of Building
-                </label>
-                <select
-                  id="typeOfBuilding"
-                  name="typeOfBuilding"
-                  className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                >
-                  <option value="">Select Type of Building</option>
-                  {TYPE_OF_BUILDING.map((type, index) => (
-                    <option key={index} value={type} className="bg-[#1f2937]">
-                      {type}
-                    </option>
-                  ))}
-                </select>
+            </FormField>
+            <FormField>
+              <label htmlFor="typeOfOccupancy" className="block mb-2 text-lg">
+                Type of Occupancy
+              </label>
+              <select
+                id="typeOfOccupancy"
+                {...register("typeOfOccupancy", {
+                  required: "Type of Occupancy is required",
+                })}
+                className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+              >
+                <option value="">Select Type of Occupancy</option>
+                {TYPE_OF_OCCUPANCY.map((type, index) => (
+                  <option key={index} value={type} className="bg-[#1f2937]">
+                    {type}
+                  </option>
+                ))}
+              </select>
+              <div className="text-red-500 text-sm mt-1">
+                {errors.typeOfOccupancy ? (
+                  (errors.typeOfOccupancy.message as string)
+                ) : (
+                  <>&nbsp;</>
+                )}
               </div>
-            </div>
+            </FormField>
+            <FormField>
+              <label htmlFor="typeOfBuilding" className="block mb-2 text-lg">
+                Type of Building
+              </label>
+              <select
+                id="typeOfBuilding"
+                {...register("typeOfBuilding", {
+                  required: "Type of Building is required",
+                })}
+                className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+              >
+                <option value="">Select Type of Building</option>
+                {TYPE_OF_BUILDING.map((type, index) => (
+                  <option key={index} value={type} className="bg-[#1f2937]">
+                    {type}
+                  </option>
+                ))}
+              </select>
+              <div className="text-red-500 text-sm mt-1">
+                {errors.typeOfBuilding ? (
+                  (errors.typeOfBuilding.message as string)
+                ) : (
+                  <>&nbsp;</>
+                )}
+              </div>
+            </FormField>
           </div>
         </div>
 
@@ -206,17 +294,13 @@ export default function FsicForm() {
             Business Information
           </h2>
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div>
-                <label
-                  htmlFor="natureOfBusiness"
-                  className="block mb-2 text-lg"
-                >
-                  Nature of Business
-                </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField>
                 <select
                   id="natureOfBusiness"
-                  name="natureOfBusiness"
+                  {...register("natureOfBusiness", {
+                    required: "Nature of Business is required",
+                  })}
                   className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
                 >
                   <option value="">Select Nature of Business</option>
@@ -226,33 +310,83 @@ export default function FsicForm() {
                     </option>
                   ))}
                 </select>
-              </div>
-              <input
-                type="text"
-                name="businessIdentificationNo"
-                placeholder="Business Identification No."
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white md:col-span-3"
-              />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.natureOfBusiness ? (
+                    (errors.natureOfBusiness.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
+              <FormField>
+                <input
+                  type="text"
+                  {...register("businessIdentificationNo", {
+                    required: "Business Identification No. is required",
+                  })}
+                  placeholder="Business Identification No."
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white md:col-span-3"
+                />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.businessIdentificationNo ? (
+                    (errors.businessIdentificationNo.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <input
-                type="text"
-                name="taxIdentificationNo"
-                placeholder="Tax Identification No."
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-              />
-              <input
-                type="text"
-                name="dtiNo"
-                placeholder="DTI No."
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-              />
-              <input
-                type="text"
-                name="secNo"
-                placeholder="Securities and Exchange Commission No."
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-              />
+              <FormField>
+                <input
+                  type="text"
+                  {...register("taxIdentificationNo", {
+                    required: "Tax Identification No. is required",
+                  })}
+                  placeholder="Tax Identification No."
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.taxIdentificationNo ? (
+                    (errors.taxIdentificationNo.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
+              <FormField>
+                <input
+                  type="text"
+                  {...register("dtiNo", { required: "DTI No. is required" })}
+                  placeholder="DTI No."
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.dtiNo ? (
+                    (errors.dtiNo.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
+              <FormField>
+                <input
+                  type="text"
+                  {...register("secNo", {
+                    required:
+                      "Securities and Exchange Commission No. is required",
+                  })}
+                  placeholder="Securities and Exchange Commission No."
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.secNo ? (
+                    (errors.secNo.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
             </div>
           </div>
         </div>
@@ -263,58 +397,60 @@ export default function FsicForm() {
             Additional Information
           </h2>
           <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-6">
-              <div className="flex items-center space-x-6">
-                <span className="text-lg">High Rise:</span>
-                <label className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    className="form-radio text-[#3b82f6] h-5 w-5"
-                    name="highRise"
-                    value="yes"
-                    checked={isHighRise === true}
-                    onChange={() => setIsHighRise(true)}
-                  />
-                  <span className="ml-2 text-lg">Yes</span>
-                </label>
-                <label className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    className="form-radio text-[#3b82f6] h-5 w-5"
-                    name="highRise"
-                    value="no"
-                    checked={isHighRise === false}
-                    onChange={() => setIsHighRise(false)}
-                  />
-                  <span className="ml-2 text-lg">No</span>
-                </label>
+            <FormField>
+              <div className="flex flex-wrap items-center justify-between gap-6">
+                <div className="flex items-center space-x-6">
+                  <span className="text-lg">High Rise:</span>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      className="form-radio text-[#3b82f6] h-5 w-5"
+                      {...register("highRise")}
+                      value="yes"
+                      checked={isHighRise === true}
+                      onChange={() => setIsHighRise(true)}
+                    />
+                    <span className="ml-2 text-lg">Yes</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      className="form-radio text-[#3b82f6] h-5 w-5"
+                      {...register("highRise")}
+                      value="no"
+                      checked={isHighRise === false}
+                      onChange={() => setIsHighRise(false)}
+                    />
+                    <span className="ml-2 text-lg">No</span>
+                  </label>
+                </div>
+                <div className="flex items-center space-x-6">
+                  <span className="text-lg">In Eminent Danger:</span>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      className="form-radio text-[#3b82f6] h-5 w-5"
+                      {...register("eminentDanger")}
+                      value="yes"
+                      checked={isInEminentDanger === true}
+                      onChange={() => setIsInEminentDanger(true)}
+                    />
+                    <span className="ml-2 text-lg">Yes</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      className="form-radio text-[#3b82f6] h-5 w-5"
+                      {...register("eminentDanger")}
+                      value="no"
+                      checked={isInEminentDanger === false}
+                      onChange={() => setIsInEminentDanger(false)}
+                    />
+                    <span className="ml-2 text-lg">No</span>
+                  </label>
+                </div>
               </div>
-              <div className="flex items-center space-x-6">
-                <span className="text-lg">In Eminent Danger:</span>
-                <label className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    className="form-radio text-[#3b82f6] h-5 w-5"
-                    name="eminentDanger"
-                    value="yes"
-                    checked={isInEminentDanger === true}
-                    onChange={() => setIsInEminentDanger(true)}
-                  />
-                  <span className="ml-2 text-lg">Yes</span>
-                </label>
-                <label className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    className="form-radio text-[#3b82f6] h-5 w-5"
-                    name="eminentDanger"
-                    value="no"
-                    checked={isInEminentDanger === false}
-                    onChange={() => setIsInEminentDanger(false)}
-                  />
-                  <span className="ml-2 text-lg">No</span>
-                </label>
-              </div>
-            </div>
+            </FormField>
           </div>
           <div>
             <h2 className="mt-4 text-2xl font-semibold text-white mb-6 flex items-center">
@@ -332,7 +468,7 @@ export default function FsicForm() {
                       <input
                         type="radio"
                         className="form-radio text-[#3b82f6] h-5 w-5"
-                        name="lastIssuanceType"
+                        {...register("lastIssuanceType")}
                         value={option}
                         checked={lastIssuanceType === option}
                         onChange={(e) => {
@@ -344,9 +480,16 @@ export default function FsicForm() {
                     </label>
                   ))}
                 </div>
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.lastIssuanceType ? (
+                    (errors.lastIssuanceType.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
               </div>
               {isLastIssuanceUnknown && (
-                <div>
+                <FormField>
                   <label
                     htmlFor="lastIssuanceDate"
                     className="block mb-2 text-lg"
@@ -356,12 +499,12 @@ export default function FsicForm() {
                   <input
                     type="date"
                     id="lastIssuanceDate"
-                    name="lastIssuanceDate"
+                    {...register("lastIssuanceDate")}
                     value={lastIssuanceDate}
                     onChange={(e) => setLastIssuanceDate(e.target.value)}
                     className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
                   />
-                </div>
+                </FormField>
               )}
             </div>
           </div>
@@ -373,13 +516,13 @@ export default function FsicForm() {
             Address Information
           </h2>
           <div className="space-y-6">
-            <div>
+            <FormField>
               <label htmlFor="barangay" className="block mb-2 text-lg">
                 Barangay
               </label>
               <select
                 id="barangay"
-                name="barangay"
+                {...register("barangay", { required: "Barangay is required" })}
                 className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
               >
                 <option value="">Select a barangay</option>
@@ -389,13 +532,29 @@ export default function FsicForm() {
                   </option>
                 ))}
               </select>
-            </div>
-            <input
-              type="text"
-              name="address"
-              placeholder="Blk No./Unit No./Name of Street/Name of Building"
-              className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-            />
+              <div className="text-red-500 text-sm mt-1">
+                {errors.barangay ? (
+                  (errors.barangay.message as string)
+                ) : (
+                  <>&nbsp;</>
+                )}
+              </div>
+            </FormField>
+            <FormField>
+              <input
+                type="text"
+                {...register("address", { required: "Address is required" })}
+                placeholder="Blk No./Unit No./Name of Street/Name of Building"
+                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+              />
+              <div className="text-red-500 text-sm mt-1">
+                {errors.address ? (
+                  (errors.address.message as string)
+                ) : (
+                  <>&nbsp;</>
+                )}
+              </div>
+            </FormField>
           </div>
         </div>
 
@@ -405,30 +564,63 @@ export default function FsicForm() {
             Contact Information
           </h2>
           <div className="space-y-6">
-            <input
-              type="email"
-              name="email"
-              placeholder="Email Address"
-              className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-            />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <input
-                type="tel"
-                name="landline"
-                placeholder="Landline Number"
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-              />
-              <div className="flex">
-                <span className="bg-[#3b82f6] text-white border-b-2 border-[#3b82f6] p-3 text-lg">
-                  +63
-                </span>
+            <FormField>
+              <div>
                 <input
-                  type="tel"
-                  name="mobile"
-                  placeholder="Mobile Number"
+                  type="email"
+                  {...register("email", { required: "Email is required" })}
+                  placeholder="Email Address"
                   className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
                 />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.email ? (
+                    (errors.email.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
               </div>
+            </FormField>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField>
+                <input
+                  type="tel"
+                  {...register("landline")}
+                  placeholder="Landline Number"
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.landline ? (
+                    (errors.landline.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
+              <FormField>
+                <div className="flex flex-col">
+                  <div className="flex">
+                    <span className="bg-[#3b82f6] text-white border-b-2 border-[#3b82f6] p-3 text-lg">
+                      +63
+                    </span>
+                    <input
+                      type="tel"
+                      {...register("mobile", {
+                        required: "Mobile Number is required",
+                      })}
+                      placeholder="Mobile Number"
+                      className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                    />
+                  </div>
+                  <div className="text-red-500 text-sm mt-1">
+                    {errors.mobile ? (
+                      (errors.mobile.message as string)
+                    ) : (
+                      <>&nbsp;</>
+                    )}
+                  </div>
+                </div>
+              </FormField>
             </div>
           </div>
         </div>
@@ -436,6 +628,7 @@ export default function FsicForm() {
         <button
           type="submit"
           className="w-full bg-[#3b82f6] text-white p-4 text-xl hover:bg-blue-600 transition-colors"
+          disabled={isSubmitting}
         >
           {isSubmitting ? "Saving Entry" : "Save Entry"}
         </button>

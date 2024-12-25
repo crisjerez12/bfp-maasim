@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { SearchIcon, RefreshCwIcon } from "lucide-react";
 import { BARANGAY } from "@/lib/constants";
 import Link from "next/link";
@@ -239,11 +238,33 @@ export default function EstablishmentInspectionForm() {
             {loading
               ? Array.from({ length: itemsPerPage }).map((_, index) => (
                   <tr key={index}>
-                    {Array.from({ length: 9 }).map((_, cellIndex) => (
-                      <td key={cellIndex} className="px-4 py-2">
-                        <Skeleton className="h-4 w-full" />
-                      </td>
-                    ))}
+                    <td className="px-4 py-2">
+                      <div className="h-4 bg-gray-500 rounded w-full"></div>
+                    </td>
+                    <td className="px-4 py-2">
+                      <div className="h-4 bg-gray-500 rounded w-full"></div>
+                    </td>
+                    <td className="px-4 py-2">
+                      <div className="h-4 bg-gray-500 rounded w-full"></div>
+                    </td>
+                    <td className="px-4 py-2">
+                      <div className="h-4 bg-gray-500 rounded w-full"></div>
+                    </td>
+                    <td className="px-4 py-2">
+                      <div className="h-4 bg-gray-500 rounded w-full"></div>
+                    </td>
+                    <td className="px-4 py-2">
+                      <div className="h-4 bg-gray-500 rounded w-full"></div>
+                    </td>
+                    <td className="px-4 py-2">
+                      <div className="h-4 bg-gray-500 rounded w-full"></div>
+                    </td>
+                    <td className="px-4 py-2">
+                      <div className="h-4 bg-gray-500 rounded w-full"></div>
+                    </td>
+                    <td className="px-4 py-2">
+                      <div className="h-4 bg-gray-500 rounded w-1/3"></div>
+                    </td>
                   </tr>
                 ))
               : paginatedEstablishments.map((establishment, index) => (

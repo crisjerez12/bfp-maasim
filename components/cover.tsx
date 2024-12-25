@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -8,16 +8,19 @@ import {
   LayoutDashboard,
   Clock,
   Building2,
-  User,
   LogOut,
   Menu,
-  Flame,
   PlusCircle,
   Archive,
   Minus,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { useSidebar, SidebarProvider } from "@/contexts/SidebarContext";
+import { useState, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
@@ -30,12 +33,26 @@ interface NavItemProps {
   active: boolean;
 }
 export default function Cover({ children }: SidebarProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  return (
+    <SidebarProvider>
+      <CoverContent>{children}</CoverContent>
+    </SidebarProvider>
+  );
+}
+
+function CoverContent({ children }: SidebarProps) {
+  const { sidebarOpen, toggleSidebar } = useSidebar();
   const [showTitle, setShowTitle] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   const pathname = usePathname();
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
+  useEffect(() => {
+    setShowTitle(true);
+  }, []);
+
+  const handleToggleSidebar = () => {
+    toggleSidebar();
     if (!sidebarOpen) {
       setTimeout(() => setShowTitle(true), 150);
     } else {
@@ -43,34 +60,40 @@ export default function Cover({ children }: SidebarProps) {
     }
   };
 
-  useEffect(() => {
-    setShowTitle(true);
-  }, []);
-
   return (
     <div className="flex h-screen overflow-hidden bg-gray-900 text-gray-100">
       <aside
+        ref={sidebarRef}
         className={cn(
-          "relative z-20 flex flex-col h-full bg-gray-800 text-gray-100 transition-all duration-300 ease-in-out",
-          sidebarOpen ? "w-64" : "w-16"
+          "fixed md:relative z-20 flex flex-col h-full bg-gradient-to-b from-gray-800 to-slate-800 text-gray-100 transition-all duration-300 ease-in-out",
+          sidebarOpen ? "w-72" : "w-20"
         )}
       >
-        <div className="flex items-center justify-between p-4 h-16">
+        <div className="flex items-center justify-between p-4">
           {sidebarOpen && (
-            <h2
+            <div
               className={cn(
-                "text-xl font-bold transition-opacity duration-500 ease-in-out",
+                "flex flex-col items-start transition-opacity duration-500 ease-in-out",
                 showTitle ? "opacity-100" : "opacity-0"
               )}
             >
-              BFP-FIRE SAFETY
-            </h2>
+              <div className="flex items-center ">
+                <Image
+                  src="/logo.png"
+                  alt="BFP-FIRE SAFETY"
+                  width={40}
+                  height={40}
+                  className="mr-2"
+                />
+                <span className="text-2xl font-bold">BFP-SYSTEM</span>
+              </div>
+            </div>
           )}
           <Button
             variant="ghost"
             size="icon"
-            className="text-gray-100 hover:bg-gray-700 hover:text-blue-400 transition-colors duration-200"
-            onClick={toggleSidebar}
+            className="text-gray-100 hover:bg-gray-700 hover:text-blue-400 transition-colors duration-200 "
+            onClick={handleToggleSidebar}
           >
             <Menu className="h-6 w-6" />
           </Button>
@@ -81,14 +104,12 @@ export default function Cover({ children }: SidebarProps) {
               href="/dashboard"
               icon={LayoutDashboard}
               title="Dashboard"
-              sidebarOpen={sidebarOpen}
               active={pathname === "/dashboard"}
             />
             <NavItem
               href="/dashboard/due"
               icon={Clock}
               title="Due"
-              sidebarOpen={sidebarOpen}
               active={pathname === "/dashboard/due"}
             />
             <div className="mt-2">
@@ -96,7 +117,7 @@ export default function Cover({ children }: SidebarProps) {
                 {sidebarOpen ? (
                   "Transactions"
                 ) : (
-                  <Minus className="-mt-6 h-7 w-7" />
+                  <Minus className="-mt-6 h-7 w-10" />
                 )}
               </div>
               <div className={cn(sidebarOpen ? "ml-2 space-y-2" : "space-y-2")}>
@@ -104,21 +125,18 @@ export default function Cover({ children }: SidebarProps) {
                   href="/dashboard/new"
                   icon={PlusCircle}
                   title="New Establishment"
-                  sidebarOpen={sidebarOpen}
                   active={pathname === "/dashboard/new"}
                 />
                 <NavItem
                   href="/dashboard/establishments"
                   icon={Building2}
                   title="Establishment"
-                  sidebarOpen={sidebarOpen}
                   active={pathname === "/dashboard/establishments"}
                 />
                 <NavItem
                   href="/dashboard/archives"
                   icon={Archive}
                   title="Archives"
-                  sidebarOpen={sidebarOpen}
                   active={pathname === "/dashboard/archives"}
                 />
               </div>
@@ -126,35 +144,49 @@ export default function Cover({ children }: SidebarProps) {
           </nav>
         </ScrollArea>
         <div className="p-4">
-          <NavItem
-            href="/dashboard/account"
-            icon={User}
-            title="Account"
-            sidebarOpen={sidebarOpen}
-            active={pathname === "/dashboard/account"}
-          />
-          <Button
-            variant="ghost"
-            className={cn(
-              "mt-2 w-full justify-start text-gray-100 hover:bg-gray-700 hover:text-blue-400 transition-colors duration-200",
-              !sidebarOpen && "justify-center"
-            )}
-          >
-            <LogOut className="h-5 w-5" />
-            {sidebarOpen && <span className="ml-2">Logout</span>}
-          </Button>
+          {sidebarOpen ? (
+            <div className="flex flex-col space-y-2 bg-gradient-to-r from-gray-300 to-gray-400 p-2 rounded-md">
+              <div className="flex items-center  space-x-2 ">
+                <Avatar>
+                  <AvatarImage src="/user-icon.png" alt="user" />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col text-gray-950">
+                  <p className="text-md  font-semibold">
+                    Maria Santos Fernandez
+                  </p>
+                  <p className="text-sm font-medium uppercase">staff</p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                className="w-full justify-center bg-blue-600 text-gray-100 hover:bg-blue-800 hover:text-blue-50 transition-colors duration-200"
+                onClick={() => console.log("Logout")}
+              >
+                <LogOut className="h-5 w-5 mr-2" />
+                Logout
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="ghost"
+              className="w-full justify-center text-gray-100 hover:bg-gray-700 hover:text-blue-400 transition-colors duration-200 p-0"
+              onClick={() => console.log("Logout")}
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          )}
         </div>
       </aside>
-      <main className="flex-1 overflow-y-auto bg-gray-900">
-        <header className="bg-gray-800 shadow-md sticky top-0 z-10">
+      <main className="flex-1 overflow-y-auto  bg-gray-900">
+        <header className="bg-gradient-to-r from-gray-800 to-slate-800 shadow-md sticky top-0 z-10">
           <div className="flex items-center justify-between px-6 py-4">
             <h1 className="text-2xl font-semibold text-gray-100">
               {getPageTitle(pathname)}
             </h1>
-            <Flame className="h-8 w-8 text-blue-400" />
           </div>
         </header>
-        <div className="p-6">{children}</div>
+        <div className={`${!isDesktop && "ml-16"} p-6`}>{children}</div>
       </main>
     </div>
   );
@@ -164,19 +196,28 @@ function NavItem({
   href,
   icon: Icon,
   title,
-  sidebarOpen,
   active,
-}: NavItemProps) {
+}: Omit<NavItemProps, "sidebarOpen">) {
+  const { sidebarOpen, setSidebarOpen } = useSidebar();
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  const handleClick = () => {
+    if (!isDesktop) {
+      setSidebarOpen(false);
+    }
+  };
+
   return (
     <Link
       href={href}
       className={cn(
-        "flex items-center py-2 px-3 rounded-r-md  transition-colors duration-200",
+        "flex items-center py-2 px-3 rounded-r-md transition-colors duration-200",
         active
           ? "border-l-4 border-blue-600 bg-gray-950/40 text-white"
           : "text-gray-300 hover:bg-gray-700 hover:text-blue-400",
         !sidebarOpen && "justify-center"
       )}
+      onClick={handleClick}
     >
       <Icon className="h-5 w-5 flex-shrink-0" />
       {sidebarOpen && (
@@ -200,8 +241,6 @@ function getPageTitle(pathname: string) {
       return "Establishments";
     case "/dashboard/archives":
       return "Archives";
-    case "/dashboard/account":
-      return "Account Settings";
     default:
       return "BFP-FIRE SAFETY";
   }

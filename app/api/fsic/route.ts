@@ -5,7 +5,10 @@ import connectToMongoDB from "@/lib/connection";
 export async function GET() {
   try {
     await connectToMongoDB();
-    const establishments = await Establishment.find({ isActive: true });
+
+    const establishments = await Establishment.find({
+      isActive: true,
+    });
 
     return NextResponse.json({
       success: true,
@@ -22,3 +25,5 @@ export async function GET() {
     );
   }
 }
+
+export const dynamic = "force-dynamic";

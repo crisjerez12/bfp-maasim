@@ -5,18 +5,14 @@ import {
   Establishment,
   EstablishmentDocument,
 } from "@/lib/models/establishment";
-import { revalidatePath } from "next/cache";
 import connectToMongoDB from "@/lib/connection";
 
 export async function createFsicEntry(formData: FormData) {
   await connectToMongoDB();
-  const rawFormData = Object.fromEntries(formData.entries());
-
-  // Convert string values to appropriate types
+  const rawFormData = Object.fromEntries(formData);
   const parsedData = {
     ...rawFormData,
     fsicNumber: Number(rawFormData.fsicNumber),
-    lastIssuance: new Date(rawFormData.lastIssuance as string),
     totalBuildArea: Number(rawFormData.totalBuildArea),
     numberOfOccupants: Number(rawFormData.numberOfOccupants),
     isHighRise: rawFormData.highRise === "yes",
@@ -27,11 +23,12 @@ export async function createFsicEntry(formData: FormData) {
   };
 
   const result = EstablishmentSchema.safeParse(parsedData);
-
   if (!result.success) {
-    const limitedErrors = result.error.errors.slice(0, 3);
-    const errorMessages = limitedErrors.map((err) => err.message).join(", ");
-    return { success: false, message: errorMessages };
+    const errorMessages = result.error.errors.map((err) => ({
+      path: err.path.join("."),
+      message: err.message,
+    }));
+    return { success: false, errorMessages };
   }
 
   try {
@@ -48,7 +45,6 @@ export async function createFsicEntry(formData: FormData) {
     const newEstablishment = new Establishment(result.data);
     await newEstablishment.save();
 
-    revalidatePath("/dashboard/new");
     return { success: true, message: "FSIC entry created successfully" };
   } catch (error) {
     console.error("Database error:", error);
@@ -128,7 +124,6 @@ export async function updateFsicEntry(formData: FormData) {
       };
     }
 
-    revalidatePath("/dashboard");
     return {
       success: true,
       message: "FSIC entry updated successfully",
@@ -156,7 +151,6 @@ export async function restoreEstablishment(id: string) {
     establishment.isActive = true;
     await establishment.save();
 
-    revalidatePath("/dashboard/archives");
     return { success: true, message: "Establishment restored successfully" };
   } catch (error) {
     console.error("Error restoring establishment:", error);
@@ -180,7 +174,6 @@ export async function deleteEstablishment(id: string) {
     establishment.isActive = false;
     await establishment.save();
 
-    revalidatePath("/dashboard");
     return { success: true, message: "Establishment deleted successfully" };
   } catch (error) {
     console.error("Error deleting establishment:", error);
