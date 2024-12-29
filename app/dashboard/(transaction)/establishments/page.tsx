@@ -30,6 +30,7 @@ interface Establishment {
   email: string;
   landline: string;
   mobile: string;
+  updatedAt: string;
 }
 
 export default function EstablishmentInspectionForm() {
@@ -83,8 +84,8 @@ export default function EstablishmentInspectionForm() {
       const matchesBarangay =
         barangay === "" || establishment.barangay === barangay;
       const matchesDateRange =
-        (!startDate || establishment.lastIssuance >= startDate) &&
-        (!endDate || establishment.lastIssuance <= endDate);
+        (!startDate || establishment.updatedAt >= startDate) &&
+        (!endDate || establishment.updatedAt <= endDate);
 
       return (
         matchesSearchTerm &&
@@ -228,7 +229,7 @@ export default function EstablishmentInspectionForm() {
                 Eminent Danger
               </th>
               <th className="bg-gray-700 text-gray-100 px-4 py-2">
-                Last Issuance
+                Last Update
               </th>
               <th className="bg-gray-700 text-gray-100 px-4 py-2">Contact</th>
               <th className="bg-gray-700 text-gray-100 px-4 py-2">Actions</th>
@@ -287,9 +288,7 @@ export default function EstablishmentInspectionForm() {
                       {establishment.isInEminentDanger ? "Yes" : "No"}
                     </td>
                     <td className="px-4 py-2">
-                      {new Date(
-                        establishment.lastIssuance
-                      ).toLocaleDateString()}
+                      {new Date(establishment.updatedAt).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-2">
                       <div>{establishment.mobile}</div>

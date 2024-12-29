@@ -5,82 +5,78 @@ import {
   TYPE_OF_OCCUPANCY,
   TYPE_OF_BUILDING,
   NATURE_OF_BUSINESS,
-  lastIssuanceOptions,
 } from "@/lib/constants";
 
 // Zod schema for validation
-export const EstablishmentSchema = z
-  .object({
-    fsicNumber: z
-      .number()
-      .int()
-      .positive()
-      .max(999999)
-      .refine((val) => val !== undefined, {
-        message: "This field is required",
-      }),
-    establishmentName: z.string().min(1, { message: "This field is required" }),
-    owner: z.string().min(1, { message: "This field is required" }),
-    representativeName: z.string().optional(),
-    tradeName: z.string().optional(),
-    totalBuildArea: z
-      .number()
-      .positive()
-      .refine((val) => val !== undefined, {
-        message: "This field is required",
-      }),
-    numberOfOccupants: z
-      .number()
-      .int()
-      .nonnegative()
-      .refine((val) => val !== undefined, {
-        message: "This field is required",
-      }),
-    typeOfOccupancy: z.string().min(1, { message: "This field is required" }),
-    typeOfBuilding: z.string().min(1, { message: "This field is required" }),
-    natureOfBusiness: z.string().min(1, { message: "This field is required" }),
-    businessIdentificationNo: z.string().optional(),
-    taxIdentificationNo: z.string().optional(),
-    dtiNo: z.string().optional(),
-    secNo: z.string().optional(),
-    isHighRise: z.boolean().refine((val) => val !== undefined, {
+export const EstablishmentSchema = z.object({
+  fsicNumber: z
+    .number()
+    .int()
+    .positive()
+    .max(9999999)
+    .refine((val) => val !== undefined, {
       message: "This field is required",
     }),
-    isInEminentDanger: z.boolean().refine((val) => val !== undefined, {
+  establishmentName: z.string().min(1, { message: "This field is required" }),
+  owner: z.string().min(1, { message: "This field is required" }),
+  representativeName: z.string().optional(),
+  tradeName: z.string().optional(),
+  totalBuildArea: z
+    .number()
+    .positive()
+    .refine((val) => val !== undefined, {
       message: "This field is required",
     }),
-    lastIssuanceType: z.string(),
-    lastIssuanceDate: z.date().optional(),
-    barangay: z.string().min(1, { message: "This field is required" }),
-    address: z.string().min(1, { message: "This field is required" }),
-    email: z
-      .string()
-      .email({ message: "Invalid email address" })
-      .refine((val) => val !== undefined, {
-        message: "This field is required",
-      }),
-    landline: z.string().optional(),
-    mobile: z
-      .string()
-      .regex(/^(\+63|0)9\d{9}$/, { message: "Invalid mobile number format" })
-      .refine((val) => val !== undefined, {
-        message: "This field is required",
-      }),
-    isActive: z.boolean().default(true),
-  })
-  .refine(
-    (data) => {
-      if (data.lastIssuanceType === "Unknown" && !data.lastIssuanceDate) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message:
-        "lastIssuanceDate is required when lastIssuanceType is 'Unknown'",
-      path: ["lastIssuanceDate"],
-    }
-  );
+  numberOfOccupants: z
+    .number()
+    .int()
+    .nonnegative()
+    .refine((val) => val !== undefined, {
+      message: "This field is required",
+    }),
+  typeOfOccupancy: z.string().min(1, { message: "This field is required" }),
+  typeOfBuilding: z.string().min(1, { message: "This field is required" }),
+  natureOfBusiness: z.string().min(1, { message: "This field is required" }),
+  businessIdentificationNo: z.string().optional(),
+  taxIdentificationNo: z.string().optional(),
+  dtiNo: z.string().optional(),
+  secNo: z.string().optional(),
+  isHighRise: z.boolean().refine((val) => val !== undefined, {
+    message: "This field is required",
+  }),
+  isInEminentDanger: z.boolean().refine((val) => val !== undefined, {
+    message: "This field is required",
+  }),
+  lastIssuanceType: z.string().optional(),
+  lastIssuanceDate: z.date().optional(),
+  barangay: z.string().min(1, { message: "This field is required" }),
+  address: z.string().min(1, { message: "This field is required" }),
+  email: z
+    .string()
+    .email({ message: "Invalid email address" })
+    .refine((val) => val !== undefined, {
+      message: "This field is required",
+    }),
+  landline: z.string().optional(),
+  mobile: z.string().refine((val) => val !== undefined, {
+    message: "This field is required",
+  }),
+  establishmentStatus: z.string().default("Pending"),
+  isActive: z.boolean().default(true),
+});
+// .refine(
+//   (data) => {
+//     if (data.lastIssuanceType === "Unknown" && !data.lastIssuanceDate) {
+//       return false;
+//     }
+//     return true;
+//   },
+//   {
+//     message:
+//       "lastIssuanceDate is required when lastIssuanceType is 'Unknown'",
+//     path: ["lastIssuanceDate"],
+//   }
+// );
 
 // Mongoose schema
 const establishmentSchema = new mongoose.Schema(
@@ -107,8 +103,6 @@ const establishmentSchema = new mongoose.Schema(
     isInEminentDanger: { type: Boolean, required: true },
     lastIssuanceType: {
       type: String,
-      enum: lastIssuanceOptions,
-      required: true,
     },
     lastIssuanceDate: { type: Date },
     barangay: { type: String, enum: BARANGAY, required: true },
@@ -117,6 +111,7 @@ const establishmentSchema = new mongoose.Schema(
     landline: String,
     mobile: { type: String, required: true },
     isActive: { type: Boolean, default: true },
+    establishmentStatus: { type: String, default: "Pending" },
   },
   {
     timestamps: true,

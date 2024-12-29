@@ -1,10 +1,6 @@
 "use server";
 
-import {
-  EstablishmentSchema,
-  Establishment,
-  EstablishmentDocument,
-} from "@/lib/models/establishment";
+import { EstablishmentSchema, Establishment } from "@/lib/models/establishment";
 import connectToMongoDB from "@/lib/connection";
 
 export async function createFsicEntry(formData: FormData) {
@@ -54,52 +50,30 @@ export async function createFsicEntry(formData: FormData) {
     };
   }
 }
-
 export async function updateFsicEntry(formData: FormData) {
   await connectToMongoDB();
   const rawFormData = Object.fromEntries(formData.entries());
-
-  const id = rawFormData.id as string;
-  delete rawFormData.id;
+  const id = rawFormData._id as string;
+  delete rawFormData._id;
 
   const parsedData = {
     ...rawFormData,
     fsicNumber: Number(rawFormData.fsicNumber),
-    lastIssuance: new Date(rawFormData.lastIssuance as string),
     totalBuildArea: Number(rawFormData.totalBuildArea),
     numberOfOccupants: Number(rawFormData.numberOfOccupants),
-    isHighRise: rawFormData.highRise === "yes",
-    isInEminentDanger: rawFormData.eminentDanger === "yes",
+    isHighRise: rawFormData.isHighRise === "yes",
+    isInEminentDanger: rawFormData.isInEminentDanger === "yes",
     mobile: rawFormData.mobile as string,
+    isActive: rawFormData.isActive === "true",
     lastIssuanceDate: rawFormData.lastIssuanceDate
       ? new Date(rawFormData.lastIssuanceDate as string)
       : undefined,
   };
-
   if (typeof parsedData.mobile === "string") {
-    parsedData.mobile = parsedData.mobile.startsWith("9")
-      ? `+63${parsedData.mobile}`
-      : parsedData.mobile;
-  }
-
-  const mobileRegex = /^(\+639|9)\d{9}$/;
-  if (parsedData.mobile && !mobileRegex.test(parsedData.mobile)) {
-    return {
-      success: false,
-      message:
-        "Invalid mobile number format. It should start with '+639' or '9' followed by 9 digits.",
-    };
+    parsedData.mobile = parsedData.mobile.replace(/^(\+639|9)/, "9");
   }
 
   try {
-    const existingEstablishment = await Establishment.findById(id);
-    if (!existingEstablishment) {
-      return {
-        success: false,
-        message: `Establishment with ID ${id} not found.`,
-      };
-    }
-
     const validationResult = EstablishmentSchema.safeParse(parsedData);
     if (!validationResult.success) {
       const errors = validationResult.error.errors.map(
@@ -111,11 +85,11 @@ export async function updateFsicEntry(formData: FormData) {
       };
     }
 
-    const updatedEstablishment = (await Establishment.findByIdAndUpdate(
+    const updatedEstablishment = await Establishment.findByIdAndUpdate(
       id,
       validationResult.data,
       { new: true, runValidators: true }
-    )) as EstablishmentDocument | null;
+    );
 
     if (!updatedEstablishment) {
       return {

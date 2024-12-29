@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 import { Clipboard, Building2, Users, MapPin, Phone } from "lucide-react";
 import {
   BARANGAY,
@@ -11,159 +10,101 @@ import {
   TYPE_OF_OCCUPANCY,
 } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
-import { validateDates } from "@/lib/functions";
+import { useForm } from "react-hook-form";
+import { useParams } from "next/navigation";
 import { updateFsicEntry } from "@/app/actions/establishment-actions";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "next/navigation";
 
-interface FSICData {
-  fsicNumber: number;
-  lastIssuance: string;
-  establishmentName: string;
-  owner: string;
-  representativeName: string;
-  tradeName: string;
-  totalBuildArea: number;
-  numberOfOccupants: number;
-  typeOfOccupancy: string;
-  typeOfBuilding: string;
-  natureOfBusiness: string;
-  businessIdentificationNo: string;
-  taxIdentificationNo: string;
-  dtiNo: string;
-  secNo: string;
-  isHighRise: boolean;
-  isInEminentDanger: boolean;
-  lastIssuanceType: string;
-  barangay: string;
-  address: string;
-  email: string;
-  landline: string;
-  mobile: string;
-}
+const FormField = ({ children }: { children: React.ReactNode }) => (
+  <div className="w-full">{children}</div>
+);
 
-export default function FsicFormEdit() {
-  const [fsicData, setFsicData] = useState<FSICData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-  const params = useParams();
+export default function FsicForm() {
   const router = useRouter();
-
-  useEffect(() => {
-    const fetchData = async () => {
+  const [isHighRise, setIsHighRise] = useState<boolean>(false);
+  const [isInEminentDanger, setIsInEminentDanger] = useState<boolean>(false);
+  const [lastIssuanceType, setLastIssuanceType] = useState<string>("");
+  const [lastIssuanceDate, setLastIssuanceDate] = useState<string>("");
+  const { toast } = useToast();
+  const { id } = useParams();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isLoading, isSubmitting, isDirty },
+  } = useForm({
+    defaultValues: async () => {
+      const res = await fetch(`/api/fsic/` + id);
+      const data = await res.json();
+      return data.data;
+    },
+  });
+  const onSubmit = async (data: { [x: string]: string | Blob }) => {
+    if (isDirty) {
+      const formData = new FormData();
+      Object.keys(data).forEach((key) => {
+        formData.append(key, data[key]);
+      });
       try {
-        const response = await fetch(`/api/fsic/${params.id}`);
-        const data = await response.json();
-        if (data.success) {
-          setFsicData(data.data);
+        const res = await updateFsicEntry(formData);
+        if (!res.success) {
+          toast({
+            title: "Error",
+            variant: "destructive",
+            description: res.message,
+          });
         } else {
           toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to fetch FSIC data",
+            title: "Success",
+            variant: "success",
+            description: res.message,
           });
+          router.push("/dashboard/establishments/" + id);
         }
       } catch (error) {
+        console.error(error);
         toast({
-          variant: "destructive",
           title: "Error",
-          description: "An unexpected error occurred while fetching data",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [params.id, toast]);
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-
-    const formData = new FormData(event.currentTarget);
-    formData.append("id", params.id as string);
-
-    const dateError = validateDates(formData);
-    if (dateError) {
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: dateError,
-      });
-      setIsSubmitting(false);
-      return;
-    }
-
-    try {
-      const response = await updateFsicEntry(formData);
-      if (response.success) {
-        toast({
-          title: "Success",
-          variant: "success",
-          description: response.message,
-        });
-        router.push(`/dashboard/establishments/${params.id}`);
-      } else {
-        toast({
           variant: "destructive",
-          title: "Error",
-          description: response.message,
+          description: "An unexpected error occurred. Please try again.",
         });
       }
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "An unexpected error occurred",
-      });
-    } finally {
-      setIsSubmitting(false);
     }
   };
-  if (isLoading) {
-    return <SkeletonForm />;
-  }
-
-  if (!fsicData) {
-    return <div className="text-white">Failed to load FSIC data.</div>;
-  }
 
   return (
     <div className="min-h-screen text-white p-8">
-      <form className="max-w-6xl mx-auto space-y-8" onSubmit={handleSubmit}>
+      <form
+        className="max-w-6xl mx-auto space-y-8"
+        onSubmit={handleSubmit(onSubmit)}
+        encType="multipart/form-data"
+      >
         <div className="flex justify-between gap-6">
-          <div>
-            <label htmlFor="fsicNumber" className="block mb-2 text-lg">
-              FSIC Number
-            </label>
-            <input
-              type="number"
-              id="fsicNumber"
-              name="fsicNumber"
-              max={999999}
-              min={0}
-              minLength={4}
-              maxLength={5}
-              className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-              placeholder="Enter FSIC Number"
-              defaultValue={fsicData.fsicNumber}
-              disabled={isSubmitting}
-            />
-          </div>
-          <div>
-            <label htmlFor="lastIssuance" className="block mb-2 text-lg">
-              Last Issuance
-            </label>
-            <input
-              type="date"
-              id="lastIssuance"
-              name="lastIssuance"
-              defaultValue={fsicData.lastIssuance.split("T")[0]}
-              className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-              disabled={isSubmitting}
-            />
-          </div>
+          <FormField>
+            <div>
+              <input
+                type="number"
+                id="fsicNumber"
+                {...register("fsicNumber", {
+                  valueAsNumber: true,
+                  required: "FSIC Number is required",
+                })}
+                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                placeholder="Enter FSIC Number"
+                min={0}
+                max={999999}
+                minLength={4}
+                maxLength={5}
+                disabled={true}
+              />
+              <div className="text-red-500 text-sm mt-1">
+                {errors.fsicNumber ? (
+                  (errors.fsicNumber.message as string)
+                ) : (
+                  <>&nbsp;</>
+                )}
+              </div>
+            </div>
+          </FormField>
         </div>
 
         <div>
@@ -172,126 +113,199 @@ export default function FsicFormEdit() {
             General Information
           </h2>
           <div className="space-y-6">
-            <input
-              type="text"
-              name="establishmentName"
-              placeholder="Establishment Name"
-              className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-              defaultValue={fsicData.establishmentName}
-              disabled={isSubmitting}
-            />
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              <input
-                type="text"
-                name="owner"
-                placeholder="Owner"
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                defaultValue={fsicData.owner}
-                disabled={isSubmitting}
-              />
-              <input
-                type="text"
-                name="representativeName"
-                placeholder="Representative Name"
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                defaultValue={fsicData.representativeName}
-                disabled={isSubmitting}
-              />
-              <input
-                type="text"
-                name="tradeName"
-                placeholder="Trade Name"
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                defaultValue={fsicData.tradeName}
-                disabled={isSubmitting}
-              />
-              <div className="flex">
+            <FormField>
+              <div>
                 <input
                   type="text"
-                  name="totalBuildArea"
-                  placeholder="Total Build Area"
+                  {...register("establishmentName", {
+                    required: "Establishment Name is required",
+                  })}
+                  placeholder="Establishment Name"
                   className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                  defaultValue={fsicData.totalBuildArea}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isLoading}
                 />
-                <span className="bg-transparent border-b-2 border-l-0 border-gray-600 p-3 text-lg text-white">
-                  sqm
-                </span>
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.establishmentName ? (
+                    (errors.establishmentName.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
               </div>
+            </FormField>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <FormField>
+                <input
+                  type="text"
+                  {...register("owner", { required: "Owner is required" })}
+                  placeholder="Owner"
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                  disabled={isSubmitting || isLoading}
+                />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.owner ? (
+                    (errors.owner.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
+              <FormField>
+                <input
+                  type="text"
+                  {...register("representativeName", {
+                    required: "Representative Name is required",
+                  })}
+                  placeholder="Representative Name"
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                  disabled={isSubmitting || isLoading}
+                />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.representativeName ? (
+                    (errors.representativeName.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
+              <FormField>
+                <input
+                  type="text"
+                  {...register("tradeName", {
+                    required: "Trade Name is required",
+                  })}
+                  placeholder="Trade Name"
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                  disabled={isSubmitting || isLoading}
+                />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.tradeName ? (
+                    (errors.tradeName.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
+              <FormField>
+                <div className="flex flex-col">
+                  <div className="flex">
+                    <input
+                      type="number"
+                      {...register("totalBuildArea", {
+                        valueAsNumber: true,
+                        required: "Total Build Area is required",
+                      })}
+                      min="0"
+                      placeholder="Total Build Area"
+                      className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                      disabled={isSubmitting || isLoading}
+                    />
+                    <span className="bg-transparent border-b-2 border-l-0 border-gray-600 p-3 text-lg text-white">
+                      sqm
+                    </span>
+                  </div>
+                  <div className="text-red-500 text-sm mt-1">
+                    {errors.totalBuildArea ? (
+                      (errors.totalBuildArea.message as string)
+                    ) : (
+                      <>&nbsp;</>
+                    )}
+                  </div>
+                </div>
+              </FormField>
             </div>
-            <input
-              type="number"
-              name="numberOfOccupants"
-              placeholder="Number of Occupant"
-              min="0"
-              className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-              defaultValue={fsicData.numberOfOccupants}
-              disabled={isSubmitting}
-            />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="typeOfOccupancy" className="block mb-2 text-lg">
-                  Type of Occupancy
-                </label>
-                <select
-                  id="typeOfOccupancy"
-                  name="typeOfOccupancy"
-                  className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                  defaultValue={fsicData.typeOfOccupancy}
-                  disabled={isSubmitting}
-                >
-                  <option value="">Select Type of Occupancy</option>
-                  {TYPE_OF_OCCUPANCY.map((type, index) => (
-                    <option key={index} value={type} className="bg-[#1f2937]">
-                      {type}
-                    </option>
-                  ))}
-                </select>
+            <FormField>
+              <input
+                type="number"
+                {...register("numberOfOccupants", {
+                  valueAsNumber: true,
+                  required: "Number of Occupants is required",
+                })}
+                min={0}
+                placeholder="Number of Occupant"
+                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                disabled={isSubmitting || isLoading}
+              />
+              <div className="text-red-500 text-sm mt-1">
+                {errors.numberOfOccupants ? (
+                  (errors.numberOfOccupants.message as string)
+                ) : (
+                  <>&nbsp;</>
+                )}
               </div>
-              <div>
-                <label htmlFor="typeOfBuilding" className="block mb-2 text-lg">
-                  Type of Building
-                </label>
-                <select
-                  id="typeOfBuilding"
-                  name="typeOfBuilding"
-                  className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                  defaultValue={fsicData.typeOfBuilding}
-                  disabled={isSubmitting}
-                >
-                  <option value="">Select Type of Building</option>
-                  {TYPE_OF_BUILDING.map((type, index) => (
-                    <option key={index} value={type} className="bg-[#1f2937]">
-                      {type}
-                    </option>
-                  ))}
-                </select>
+            </FormField>
+            <FormField>
+              <label htmlFor="typeOfOccupancy" className="block mb-2 text-lg">
+                Type of Occupancy
+              </label>
+              <select
+                id="typeOfOccupancy"
+                {...register("typeOfOccupancy", {
+                  required: "Type of Occupancy is required",
+                })}
+                className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                disabled={isSubmitting || isLoading}
+              >
+                <option value="">Select Type of Occupancy</option>
+                {TYPE_OF_OCCUPANCY.map((type, index) => (
+                  <option key={index} value={type} className="bg-[#1f2937]">
+                    {type}
+                  </option>
+                ))}
+              </select>
+              <div className="text-red-500 text-sm mt-1">
+                {errors.typeOfOccupancy ? (
+                  (errors.typeOfOccupancy.message as string)
+                ) : (
+                  <>&nbsp;</>
+                )}
               </div>
-            </div>
+            </FormField>
+            <FormField>
+              <label htmlFor="typeOfBuilding" className="block mb-2 text-lg">
+                Type of Building
+              </label>
+              <select
+                id="typeOfBuilding"
+                {...register("typeOfBuilding", {
+                  required: "Type of Building is required",
+                })}
+                className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                disabled={isSubmitting || isLoading}
+              >
+                <option value="">Select Type of Building</option>
+                {TYPE_OF_BUILDING.map((type, index) => (
+                  <option key={index} value={type} className="bg-[#1f2937]">
+                    {type}
+                  </option>
+                ))}
+              </select>
+              <div className="text-red-500 text-sm mt-1">
+                {errors.typeOfBuilding ? (
+                  (errors.typeOfBuilding.message as string)
+                ) : (
+                  <>&nbsp;</>
+                )}
+              </div>
+            </FormField>
           </div>
         </div>
 
-        {/* Business Information */}
         <div>
           <h2 className="text-2xl font-semibold text-white mb-6 flex items-center">
             <Building2 className="mr-2 h-6 w-6 text-white" />
             Business Information
           </h2>
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div>
-                <label
-                  htmlFor="natureOfBusiness"
-                  className="block mb-2 text-lg"
-                >
-                  Nature of Business
-                </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField>
                 <select
                   id="natureOfBusiness"
-                  name="natureOfBusiness"
+                  {...register("natureOfBusiness", {
+                    required: "Nature of Business is required",
+                  })}
                   className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                  defaultValue={fsicData.natureOfBusiness}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isLoading}
                 >
                   <option value="">Select Nature of Business</option>
                   {NATURE_OF_BUSINESS.map((nature, index) => (
@@ -300,104 +314,154 @@ export default function FsicFormEdit() {
                     </option>
                   ))}
                 </select>
-              </div>
-              <input
-                type="text"
-                name="businessIdentificationNo"
-                placeholder="Business Identification No."
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white md:col-span-3"
-                defaultValue={fsicData.businessIdentificationNo}
-                disabled={isSubmitting}
-              />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.natureOfBusiness ? (
+                    (errors.natureOfBusiness.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
+              <FormField>
+                <input
+                  type="text"
+                  {...register("businessIdentificationNo", {
+                    required: "Business Identification No. is required",
+                  })}
+                  placeholder="Business Identification No."
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white md:col-span-3"
+                  disabled={isSubmitting || isLoading}
+                />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.businessIdentificationNo ? (
+                    (errors.businessIdentificationNo.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <input
-                type="text"
-                name="taxIdentificationNo"
-                placeholder="Tax Identification No."
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                defaultValue={fsicData.taxIdentificationNo}
-                disabled={isSubmitting}
-              />
-              <input
-                type="text"
-                name="dtiNo"
-                placeholder="DTI No."
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                defaultValue={fsicData.dtiNo}
-                disabled={isSubmitting}
-              />
-              <input
-                type="text"
-                name="secNo"
-                placeholder="Securities and Exchange Commission No."
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                defaultValue={fsicData.secNo}
-                disabled={isSubmitting}
-              />
+              <FormField>
+                <input
+                  type="text"
+                  {...register("taxIdentificationNo", {
+                    required: "Tax Identification No. is required",
+                  })}
+                  placeholder="Tax Identification No."
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                  disabled={isSubmitting || isLoading}
+                />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.taxIdentificationNo ? (
+                    (errors.taxIdentificationNo.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
+              <FormField>
+                <input
+                  type="text"
+                  {...register("dtiNo", { required: "DTI No. is required" })}
+                  placeholder="DTI No."
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                  disabled={isSubmitting || isLoading}
+                />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.dtiNo ? (
+                    (errors.dtiNo.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
+              <FormField>
+                <input
+                  type="text"
+                  {...register("secNo", {
+                    required:
+                      "Securities and Exchange Commission No. is required",
+                  })}
+                  placeholder="Securities and Exchange Commission No."
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                  disabled={isSubmitting || isLoading}
+                />
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.secNo ? (
+                    (errors.secNo.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
             </div>
           </div>
         </div>
 
-        {/* Additional Information */}
         <div>
           <h2 className="text-2xl font-semibold text-white mb-6 flex items-center">
             <Users className="mr-2 h-6 w-6 text-white" />
             Additional Information
           </h2>
           <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-6">
-              <div className="flex items-center space-x-6">
-                <span className="text-lg">High Rise:</span>
-                <label className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    className="form-radio text-[#3b82f6] h-5 w-5"
-                    name="highRise"
-                    value="yes"
-                    defaultChecked={fsicData.isHighRise}
-                    disabled={isSubmitting}
-                  />
-                  <span className="ml-2 text-lg">Yes</span>
-                </label>
-                <label className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    className="form-radio text-[#3b82f6] h-5 w-5"
-                    name="highRise"
-                    value="no"
-                    defaultChecked={!fsicData.isHighRise}
-                    disabled={isSubmitting}
-                  />
-                  <span className="ml-2 text-lg">No</span>
-                </label>
+            <FormField>
+              <div className="flex flex-wrap items-center justify-between gap-6">
+                <div className="flex items-center space-x-6">
+                  <span className="text-lg">High Rise:</span>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      className="form-radio text-[#3b82f6] h-5 w-5"
+                      {...register("isHighRise")}
+                      value="yes"
+                      checked={isHighRise === true}
+                      onChange={() => setIsHighRise(true)}
+                      disabled={isSubmitting || isLoading}
+                    />
+                    <span className="ml-2 text-lg">Yes</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      className="form-radio text-[#3b82f6] h-5 w-5"
+                      {...register("isHighRise")}
+                      value="no"
+                      checked={isHighRise === false}
+                      onChange={() => setIsHighRise(false)}
+                    />
+                    <span className="ml-2 text-lg">No</span>
+                  </label>
+                </div>
+                <div className="flex items-center space-x-6">
+                  <span className="text-lg">In Eminent Danger:</span>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      className="form-radio text-[#3b82f6] h-5 w-5"
+                      {...register("isInEminentDanger")}
+                      value="yes"
+                      checked={isInEminentDanger === true}
+                      onChange={() => setIsInEminentDanger(true)}
+                      disabled={isSubmitting || isLoading}
+                    />
+                    <span className="ml-2 text-lg">Yes</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      className="form-radio text-[#3b82f6] h-5 w-5"
+                      {...register("isInEminentDanger")}
+                      value="no"
+                      checked={isInEminentDanger === false}
+                      onChange={() => setIsInEminentDanger(false)}
+                      disabled={isSubmitting || isLoading}
+                    />
+                    <span className="ml-2 text-lg">No</span>
+                  </label>
+                </div>
               </div>
-              <div className="flex items-center space-x-6">
-                <span className="text-lg">In Eminent Danger:</span>
-                <label className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    className="form-radio text-[#3b82f6] h-5 w-5"
-                    name="eminentDanger"
-                    value="yes"
-                    defaultChecked={fsicData.isInEminentDanger}
-                    disabled={isSubmitting}
-                  />
-                  <span className="ml-2 text-lg">Yes</span>
-                </label>
-                <label className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    className="form-radio text-[#3b82f6] h-5 w-5"
-                    name="eminentDanger"
-                    value="no"
-                    defaultChecked={!fsicData.isInEminentDanger}
-                    disabled={isSubmitting}
-                  />
-                  <span className="ml-2 text-lg">No</span>
-                </label>
-              </div>
-            </div>
+            </FormField>
           </div>
           <div>
             <h2 className="mt-4 text-2xl font-semibold text-white mb-6 flex items-center">
@@ -415,37 +479,64 @@ export default function FsicFormEdit() {
                       <input
                         type="radio"
                         className="form-radio text-[#3b82f6] h-5 w-5"
-                        name="lastIssuanceType"
+                        {...register("lastIssuanceType")}
                         value={option}
-                        defaultChecked={fsicData.lastIssuanceType === option}
-                        disabled={isSubmitting}
+                        checked={lastIssuanceType === option}
+                        onChange={(e) => {
+                          setLastIssuanceType(e.target.value);
+                        }}
+                        disabled={isSubmitting || isLoading}
                       />
                       <span className="text-base col-span-7">{option}</span>
                     </label>
                   ))}
                 </div>
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.lastIssuanceType ? (
+                    (errors.lastIssuanceType.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
               </div>
+              <FormField>
+                <label
+                  htmlFor="lastIssuanceDate"
+                  className="block mb-2 text-lg"
+                >
+                  Date of Last Issuance
+                </label>
+                <input
+                  type="date"
+                  id="lastIssuanceDate"
+                  {...register("lastIssuanceDate")}
+                  disabled={
+                    lastIssuanceType === "" || isSubmitting || isLoading
+                  }
+                  value={lastIssuanceDate}
+                  onChange={(e) => setLastIssuanceDate(e.target.value)}
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                />
+              </FormField>
             </div>
           </div>
         </div>
 
-        {/* Address Information */}
         <div>
           <h2 className="text-2xl font-semibold text-white mb-6 flex items-center">
             <MapPin className="mr-2 h-6 w-6 text-white" />
             Address Information
           </h2>
           <div className="space-y-6">
-            <div>
+            <FormField>
               <label htmlFor="barangay" className="block mb-2 text-lg">
                 Barangay
               </label>
               <select
                 id="barangay"
-                name="barangay"
+                {...register("barangay", { required: "Barangay is required" })}
                 className="w-full bg-[#1f2937] border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                defaultValue={fsicData.barangay}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isLoading}
               >
                 <option value="">Select a barangay</option>
                 {BARANGAY.map((barangay, index) => (
@@ -454,91 +545,105 @@ export default function FsicFormEdit() {
                   </option>
                 ))}
               </select>
-            </div>
-            <input
-              type="text"
-              name="address"
-              placeholder="Blk No./Unit No./Name of Street/Name of Building"
-              className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-              defaultValue={fsicData.address}
-              disabled={isSubmitting}
-            />
+              <div className="text-red-500 text-sm mt-1">
+                {errors.barangay ? (
+                  (errors.barangay.message as string)
+                ) : (
+                  <>&nbsp;</>
+                )}
+              </div>
+            </FormField>
+            <FormField>
+              <input
+                type="text"
+                {...register("address", { required: "Address is required" })}
+                placeholder="Blk No./Unit No./Name of Street/Name of Building"
+                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                disabled={isSubmitting || isLoading}
+              />
+              <div className="text-red-500 text-sm mt-1">
+                {errors.address ? (
+                  (errors.address.message as string)
+                ) : (
+                  <>&nbsp;</>
+                )}
+              </div>
+            </FormField>
           </div>
         </div>
 
-        {/* Contact Information */}
         <div>
           <h2 className="text-2xl font-semibold text-white mb-6 flex items-center">
             <Phone className="mr-2 h-6 w-6 text-white" />
             Contact Information
           </h2>
           <div className="space-y-6">
-            <input
-              type="email"
-              name="email"
-              placeholder="Email Address"
-              className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-              defaultValue={fsicData.email}
-              disabled={isSubmitting}
-            />
+            <FormField>
+              <div>
+                <input
+                  type="email"
+                  {...register("email")}
+                  placeholder="Email Address"
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                  disabled={isSubmitting || isLoading}
+                />
+                <div className="text-red-500 text-sm mt-1"></div>
+              </div>
+            </FormField>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <input
-                type="tel"
-                name="landline"
-                placeholder="Landline Number"
-                className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                defaultValue={fsicData.landline}
-                disabled={isSubmitting}
-              />
-              <div className="flex">
-                <span className="bg-[#3b82f6] text-white border-b-2 border-[#3b82f6] p-3 text-lg">
-                  +63
-                </span>
+              <FormField>
                 <input
                   type="tel"
-                  name="mobile"
-                  placeholder="Mobile Number"
+                  {...register("landline")}
+                  placeholder="Landline Number"
                   className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                  defaultValue={fsicData.mobile.replace("+63", "")}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isLoading}
                 />
-              </div>
+                <div className="text-red-500 text-sm mt-1">
+                  {errors.landline ? (
+                    (errors.landline.message as string)
+                  ) : (
+                    <>&nbsp;</>
+                  )}
+                </div>
+              </FormField>
+              <FormField>
+                <div className="flex flex-col">
+                  <div className="flex">
+                    <span className="bg-[#3b82f6] text-white border-b-2 border-[#3b82f6] p-3 text-lg">
+                      +63
+                    </span>
+                    <input
+                      type="tel"
+                      {...register("mobile", {
+                        required: "Mobile Number is required",
+                      })}
+                      placeholder="Mobile Number"
+                      className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                      disabled={isSubmitting || isLoading}
+                    />
+                  </div>
+                  <div className="text-red-500 text-sm mt-1">
+                    {errors.mobile ? (
+                      (errors.mobile.message as string)
+                    ) : (
+                      <>&nbsp;</>
+                    )}
+                  </div>
+                </div>
+              </FormField>
             </div>
           </div>
         </div>
 
         <button
           type="submit"
-          className="w-full bg-[#3b82f6] text-white p-4 text-xl hover:bg-blue-600 transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed"
-          disabled={isSubmitting}
+          className="w-full bg-[#3b82f6] text-white p-4 text-xl hover:bg-blue-600 transition-colors"
+          disabled={isSubmitting || isLoading}
         >
-          {isSubmitting ? "Updating Entry..." : "Update Entry"}
+          {isSubmitting ? "Saving Entry" : "Save Entry"}
         </button>
       </form>
-    </div>
-  );
-}
-
-function SkeletonForm() {
-  return (
-    <div className="min-h-screen text-white p-8">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <div className="flex justify-between gap-6">
-          <Skeleton className="h-12 w-1/2" />
-          <Skeleton className="h-12 w-1/2" />
-        </div>
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="space-y-6">
-            <Skeleton className="h-8 w-1/4" />
-            <Skeleton className="h-12 w-full" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-          </div>
-        ))}
-        <Skeleton className="h-16 w-full" />
-      </div>
     </div>
   );
 }

@@ -26,11 +26,11 @@ import {
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { deleteEstablishment } from "@/app/actions/establishment-actions";
+import Loading from "./loading";
 
 interface FSICData {
   _id: string;
   fsicNumber: number;
-  lastIssuance: string;
   establishmentName: string;
   owner: string;
   representativeName: string;
@@ -53,6 +53,7 @@ interface FSICData {
   landline: string;
   mobile: string;
   isActive: boolean;
+  updatedAt: string;
 }
 
 export default function FSICDetails() {
@@ -158,11 +159,7 @@ export default function FSICDetails() {
   };
 
   if (!fsicData) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-gray-900 text-gray-100">
-        Loading...
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
@@ -174,15 +171,9 @@ export default function FSICDetails() {
           </Button>
         </Link>
 
+        <h1 className="text-3xl font-bold">FSIC Details</h1>
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">FSIC Details</h1>
-          <div className="flex space-x-2">
-            <Button
-              onClick={() => handleDownload("certificate")}
-              className="bg-blue-600 hover:bg-blue-500 text-white transition-colors duration-200"
-            >
-              <Download className="mr-2 h-4 w-4" /> Certificate
-            </Button>
+          <div className="flex space-x-2 flex-wrap">
             <Button
               onClick={() => handleDownload("receipt")}
               className="bg-blue-600 hover:bg-blue-500 text-white transition-colors duration-200"
@@ -294,9 +285,9 @@ export default function FSICDetails() {
                   <span>{fsicData.fsicNumber}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-semibold">Last Issuance:</span>
+                  <span className="font-semibold">Last Update:</span>
                   <span>
-                    {new Date(fsicData.lastIssuance).toLocaleDateString()}
+                    {new Date(fsicData.updatedAt).toLocaleDateString()}
                   </span>
                 </div>
                 <div className="flex justify-between">

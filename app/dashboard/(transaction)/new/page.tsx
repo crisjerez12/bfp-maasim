@@ -20,9 +20,8 @@ const FormField = ({ children }: { children: React.ReactNode }) => (
 export default function FsicForm() {
   const [isHighRise, setIsHighRise] = useState<boolean>(false);
   const [isInEminentDanger, setIsInEminentDanger] = useState<boolean>(false);
-  const [lastIssuanceType, setLastIssuanceType] = useState<string>("Unknown");
-  const [isLastIssuanceUnknown, setIsLastIssuanceUnknown] =
-    useState<boolean>(true);
+  const [lastIssuanceType, setLastIssuanceType] = useState<string>("");
+
   const [lastIssuanceDate, setLastIssuanceDate] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const { toast } = useToast();
@@ -51,8 +50,7 @@ export default function FsicForm() {
         setKey(+new Date());
         setIsHighRise(false);
         setIsInEminentDanger(false);
-        setLastIssuanceType("Unknown");
-        setIsLastIssuanceUnknown(true);
+        setLastIssuanceType("");
         setLastIssuanceDate("");
         reset();
       } else {
@@ -473,7 +471,6 @@ export default function FsicForm() {
                         checked={lastIssuanceType === option}
                         onChange={(e) => {
                           setLastIssuanceType(e.target.value);
-                          setIsLastIssuanceUnknown(option === "Unknown");
                         }}
                       />
                       <span className="text-base col-span-7">{option}</span>
@@ -488,24 +485,23 @@ export default function FsicForm() {
                   )}
                 </div>
               </div>
-              {isLastIssuanceUnknown && (
-                <FormField>
-                  <label
-                    htmlFor="lastIssuanceDate"
-                    className="block mb-2 text-lg"
-                  >
-                    Date of Last Issuance
-                  </label>
-                  <input
-                    type="date"
-                    id="lastIssuanceDate"
-                    {...register("lastIssuanceDate")}
-                    value={lastIssuanceDate}
-                    onChange={(e) => setLastIssuanceDate(e.target.value)}
-                    className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
-                  />
-                </FormField>
-              )}
+              <FormField>
+                <label
+                  htmlFor="lastIssuanceDate"
+                  className="block mb-2 text-lg"
+                >
+                  Date of Last Issuance
+                </label>
+                <input
+                  type="date"
+                  id="lastIssuanceDate"
+                  {...register("lastIssuanceDate")}
+                  disabled={lastIssuanceType === ""}
+                  value={lastIssuanceDate}
+                  onChange={(e) => setLastIssuanceDate(e.target.value)}
+                  className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
+                />
+              </FormField>
             </div>
           </div>
         </div>
@@ -568,17 +564,11 @@ export default function FsicForm() {
               <div>
                 <input
                   type="email"
-                  {...register("email", { required: "Email is required" })}
+                  {...register("email")}
                   placeholder="Email Address"
                   className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
                 />
-                <div className="text-red-500 text-sm mt-1">
-                  {errors.email ? (
-                    (errors.email.message as string)
-                  ) : (
-                    <>&nbsp;</>
-                  )}
-                </div>
+                <div className="text-red-500 text-sm mt-1"></div>
               </div>
             </FormField>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
