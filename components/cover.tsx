@@ -13,6 +13,7 @@ import {
   PlusCircle,
   Archive,
   Minus,
+  UserPen,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -138,6 +139,12 @@ function CoverContent({ children }: SidebarProps) {
                   icon={Archive}
                   title="Archives"
                   active={pathname === "/dashboard/archives"}
+                />
+                <NavItem
+                  href="/dashboard/accounts"
+                  icon={UserPen}
+                  title="Accounts"
+                  active={pathname === "/dashboard/accounts"}
                 />
               </div>
             </div>

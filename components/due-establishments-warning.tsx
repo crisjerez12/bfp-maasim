@@ -10,19 +10,45 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { AlertTriangleIcon } from "lucide-react";
+import { AlertTriangleIcon, Loader2 } from "lucide-react";
 
-// Mock data for due establishments
-const dueEstablishments = [
-  { id: 1, name: "Sunset Cafe", dueDate: "2023-05-15" },
-  { id: 2, name: "Mountain View Hotel", dueDate: "2023-05-18" },
-  { id: 3, name: "City Center Mall", dueDate: "2023-05-20" },
-];
+interface Establishment {
+  _id: string;
+  establishmentName: string;
+  dueDate: {
+    month: string;
+    day: string;
+  };
+}
 
 export default function DueEstablishmentsWarning() {
   const [isOpen, setIsOpen] = useState(true);
+  const [dueEstablishments, setDueEstablishments] = useState<Establishment[]>(
+    []
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchDueEstablishments = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch("/api/fsic/inspections");
+        const data = await response.json();
+        if (data.success) {
+          setDueEstablishments(data.data);
+        } else {
+          setError("Failed to fetch due establishments");
+        }
+      } catch (error) {
+        setError("An error occurred while fetching due establishments");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDueEstablishments();
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Enter" || event.key === "Escape") {
         setIsOpen(false);
@@ -49,25 +75,42 @@ export default function DueEstablishmentsWarning() {
             Due Establishments
           </DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-6 md:grid-cols-2 lg:grid-cols-3">
-          {dueEstablishments.map((establishment) => (
-            <Card
-              key={establishment.id}
-              className="bg-blue-300/50 backdrop-blur-sm border-blue-400/50 shadow-md hover:shadow-lg transition-shadow duration-300"
-            >
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-blue-100">
-                  {establishment.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-blue-100">
-                  Due Date:{" "}
-                  <span className="font-medium">{establishment.dueDate}</span>
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="py-6">
+          {isLoading ? (
+            <div className="flex justify-center items-center">
+              <Loader2 className="w-8 h-8 text-blue-100 animate-spin" />
+            </div>
+          ) : error ? (
+            <p className="text-red-300 text-center">{error}</p>
+          ) : dueEstablishments.length === 0 ? (
+            <p className="text-blue-100 text-center">
+              No due inspections for today.
+            </p>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {dueEstablishments.map((establishment) => (
+                <Card
+                  key={establishment._id}
+                  className="bg-blue-300/50 backdrop-blur-sm border-blue-400/50 shadow-md hover:shadow-lg transition-shadow duration-300"
+                >
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold text-blue-100">
+                      {establishment.establishmentName}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-blue-100">
+                      Due Date:{" "}
+                      <span className="font-medium">
+                        {establishment.dueDate.month}{" "}
+                        {establishment.dueDate.day}
+                      </span>
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button

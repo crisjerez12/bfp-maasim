@@ -63,20 +63,14 @@ export const EstablishmentSchema = z.object({
   }),
   establishmentStatus: z.string().default("Pending"),
   isActive: z.boolean().default(true),
+  dueDate: z
+    .object({
+      month: z.string(),
+      day: z.string(),
+    })
+    .optional(),
+  inspectionDate: z.date().optional(),
 });
-// .refine(
-//   (data) => {
-//     if (data.lastIssuanceType === "Unknown" && !data.lastIssuanceDate) {
-//       return false;
-//     }
-//     return true;
-//   },
-//   {
-//     message:
-//       "lastIssuanceDate is required when lastIssuanceType is 'Unknown'",
-//     path: ["lastIssuanceDate"],
-//   }
-// );
 
 // Mongoose schema
 const establishmentSchema = new mongoose.Schema(
@@ -112,6 +106,11 @@ const establishmentSchema = new mongoose.Schema(
     mobile: { type: String, required: true },
     isActive: { type: Boolean, default: true },
     establishmentStatus: { type: String, default: "Pending" },
+    dueDate: {
+      month: String,
+      day: String,
+    },
+    inspectionDate: Date,
   },
   {
     timestamps: true,

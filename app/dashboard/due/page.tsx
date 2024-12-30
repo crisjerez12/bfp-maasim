@@ -3,16 +3,17 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, AlertCircle } from "lucide-react";
+import { Calendar, AlertCircle, User, Building, Phone } from "lucide-react";
 
 interface DueData {
   id: string;
   establishmentName: string;
-  dueDate: string;
+  dueDate: { day: string };
   address: string;
+  owner: string;
+  typeOfOccupancy: string;
+  mobile: string;
 }
-
-const initialDuesData: DueData[] = [];
 
 export default function DuesPage() {
   const [duesData, setDuesData] = useState<DueData[]>([]);
@@ -21,11 +22,16 @@ export default function DuesPage() {
   useEffect(() => {
     const fetchDuesData = async () => {
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1500)); // 1.5 second delay
-        setDuesData(initialDuesData);
-        setIsLoading(false);
+        const response = await fetch("/api/fsic/due");
+        const data = await response.json();
+        if (data.success) {
+          setDuesData(data.data);
+        } else {
+          console.error("Failed to fetch dues data:", data.error);
+        }
       } catch (error) {
         console.error("Error fetching dues data:", error);
+      } finally {
         setIsLoading(false);
       }
     };
@@ -55,8 +61,8 @@ export default function DuesPage() {
       <AlertCircle className="w-16 h-16 text-yellow-400 mb-4" />
       <h2 className="text-2xl font-bold mb-2">No Dues Records Found</h2>
       <p className="text-gray-300 text-center">
-        There are currently no due records to display. New records will appear
-        here when they become available.
+        There are currently no due records to display for this month. New
+        records will appear here when they become available.
       </p>
     </div>
   );
@@ -64,7 +70,13 @@ export default function DuesPage() {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Establishment Dues</h1>
+        <h1 className="text-3xl font-bold mb-6">
+          Establishment Dues for{" "}
+          {new Date().toLocaleString("default", {
+            month: "long",
+            year: "numeric",
+          })}
+        </h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {isLoading ? (
             Array(6)
@@ -86,8 +98,23 @@ export default function DuesPage() {
                     <Calendar className="mr-2 h-5 w-5 text-blue-400" />
                     <span className="font-semibold">Due Date:</span>
                     <span className="ml-2">
-                      {new Date(due.dueDate).toLocaleDateString()}
+                      {due.dueDate?.day || "Not Set"}
                     </span>
+                  </div>
+                  <div className="flex items-start mb-2">
+                    <User className="mr-2 h-5 w-5 text-green-400 flex-shrink-0" />
+                    <span className="font-semibold mr-2">Owner:</span>
+                    <span className="flex-1">{due.owner}</span>
+                  </div>
+                  <div className="flex items-start mb-2">
+                    <Building className="mr-2 h-5 w-5 text-yellow-400 flex-shrink-0" />
+                    <span className="font-semibold mr-2">Type:</span>
+                    <span className="flex-1">{due.typeOfOccupancy}</span>
+                  </div>
+                  <div className="flex items-start mb-2">
+                    <Phone className="mr-2 h-5 w-5 text-purple-400 flex-shrink-0" />
+                    <span className="font-semibold mr-2">Contact:</span>
+                    <span className="flex-1">{due.mobile}</span>
                   </div>
                   <div className="flex items-start">
                     <span className="font-semibold mr-2">Address:</span>

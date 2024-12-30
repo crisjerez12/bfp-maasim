@@ -157,3 +157,52 @@ export async function deleteEstablishment(id: string) {
     };
   }
 }
+export async function updatePaymentStatus(
+  id: string,
+  data: {
+    dueDate: { month: string; day: string };
+    inspectionDate: Date | undefined;
+    establishmentStatus: string;
+  }
+) {
+  await connectToMongoDB();
+
+  try {
+    const establishment = await Establishment.findById(id);
+
+    if (!establishment) {
+      return { success: false, message: "Establishment not found" };
+    }
+
+    establishment.dueDate = data.dueDate;
+    establishment.inspectionDate = data.inspectionDate;
+    establishment.establishmentStatus = data.establishmentStatus;
+
+    const validationResult = EstablishmentSchema.safeParse(
+      establishment.toObject()
+    );
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(
+        (err) => `${err.path.join(".")}: ${err.message}`
+      );
+      return {
+        success: false,
+        message: `Validation failed: ${errors.join(", ")}`,
+      };
+    }
+
+    await establishment.save();
+
+    return {
+      success: true,
+      message: "Payment status updated successfully",
+      data: establishment,
+    };
+  } catch (error) {
+    console.error("Error updating payment status:", error);
+    return {
+      success: false,
+      message: "An error occurred while updating the payment status",
+    };
+  }
+}

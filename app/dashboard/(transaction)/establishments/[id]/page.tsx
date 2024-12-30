@@ -12,6 +12,7 @@ import {
   Briefcase,
   Phone,
   Archive,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +28,9 @@ import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { deleteEstablishment } from "@/app/actions/establishment-actions";
 import Loading from "./loading";
+import { PaymentStatusDialog } from "@/components/PaymentStatusDialog";
+import { CertificateDialog } from "@/components/CertificateDialog";
+import CertificateDownloadButton from "@/components/CertificateDownloadButton";
 
 interface FSICData {
   _id: string;
@@ -54,6 +58,16 @@ interface FSICData {
   mobile: string;
   isActive: boolean;
   updatedAt: string;
+  dueDate?: { month: string; day: string };
+  establishmentStatus?: string;
+}
+
+interface CertificateFormData {
+  certificateType: string;
+  amountPaid: string;
+  orNumber: string;
+  chiefFSES: string;
+  fireMarshal: string;
 }
 
 export default function FSICDetails() {
@@ -61,6 +75,7 @@ export default function FSICDetails() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isCertDialogOpen, setIsCertDialogOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const params = useParams();
@@ -158,6 +173,68 @@ export default function FSICDetails() {
     console.log(`Downloading ${type}...`);
   };
 
+  const handlePaymentStatusUpdate = (data: {
+    id: string;
+    dueDate: { month: string; day: string };
+    inspectionDate: Date | undefined;
+    establishmentStatus: string;
+  }) => {
+    console.log("Payment Status Update:", data);
+    setFsicData((prevData) => ({
+      ...prevData!,
+      dueDate: data.dueDate,
+      inspectionDate: data.inspectionDate,
+      establishmentStatus: data.establishmentStatus,
+    }));
+  };
+
+  const handleCertificateDownload = async (formData: CertificateFormData) => {
+    try {
+      const certificateInfo = {
+        fsicNumber: `R ${String(fsicData?.fsicNumber).padStart(
+          2,
+          "0"
+        )}-${new Date().getFullYear().toString().slice(2)}`,
+        establishmentName: fsicData?.establishmentName || "",
+        owner: fsicData?.owner || "",
+        address: fsicData?.address || "",
+        purpose: formData.certificateType,
+        certificateType: formData.certificateType,
+        amountPaid: formData.amountPaid,
+        orNumber: formData.orNumber,
+        chiefFSES: formData.chiefFSES,
+        fireMarshal: formData.fireMarshal,
+      };
+
+      // Use CertificateDownloadButton to generate the certificate
+      const onGenerate = (blob: Blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `FSIC-${certificateInfo.fsicNumber}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      };
+
+      <CertificateDownloadButton
+        info={certificateInfo}
+        onGenerate={onGenerate}
+      />;
+
+      setIsCertDialogOpen(false);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `Failed to generate certificate. ${
+          error instanceof Error ? error.message : ""
+        }`,
+      });
+    }
+  };
+
   if (!fsicData) {
     return <Loading />;
   }
@@ -174,11 +251,22 @@ export default function FSICDetails() {
         <h1 className="text-3xl font-bold">FSIC Details</h1>
         <div className="flex justify-between items-center mb-6">
           <div className="flex space-x-2 flex-wrap">
+            <PaymentStatusDialog
+              id={fsicData._id}
+              onStatusUpdate={handlePaymentStatusUpdate}
+            />
+
             <Button
               onClick={() => handleDownload("receipt")}
               className="bg-blue-600 hover:bg-blue-500 text-white transition-colors duration-200"
             >
               <Download className="mr-2 h-4 w-4" /> Receipt
+            </Button>
+            <Button
+              onClick={() => setIsCertDialogOpen(true)} // Updated certificate button click handler
+              className="bg-blue-600 hover:bg-blue-500 text-white transition-colors duration-200"
+            >
+              <FileText className="mr-2 h-4 w-4" /> Certificate
             </Button>
             <Link href={`${params.id}/edit`} passHref>
               <Button className="bg-green-600 hover:bg-green-500 text-white transition-colors duration-200">
@@ -306,6 +394,18 @@ export default function FSICDetails() {
                   <span className="font-semibold">Trade Name:</span>
                   <span>{fsicData.tradeName}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="font-semibold">Due Date:</span>
+                  <span>
+                    {fsicData.dueDate
+                      ? `${fsicData.dueDate.month} ${fsicData.dueDate.day}`
+                      : "Not set"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-semibold">Establishment Status:</span>
+                  <span>{fsicData.establishmentStatus || "Not set"}</span>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -413,6 +513,24 @@ export default function FSICDetails() {
             </CardContent>
           </Card>
         </div>
+        <CertificateDialog
+          isOpen={isCertDialogOpen}
+          onClose={() => setIsCertDialogOpen(false)}
+          onSubmit={handleCertificateDownload}
+          defaultValues={{
+            certificateType: "Business Permit",
+            amountPaid: "",
+            orNumber: "",
+            chiefFSES: "",
+            fireMarshal: "",
+          }}
+          establishmentInfo={{
+            fsicNumber: fsicData?.fsicNumber,
+            establishmentName: fsicData?.establishmentName,
+            owner: fsicData?.owner,
+            address: fsicData?.address,
+          }}
+        />
       </div>
     </div>
   );
