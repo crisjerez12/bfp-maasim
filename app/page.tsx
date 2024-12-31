@@ -1,19 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { Eye, EyeOff, Lock, User, Shield } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { authenticate } from "./actions/auth";
+import { toast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    const formData = new FormData(event.currentTarget);
+    const result = await authenticate(formData);
+    if (!result.success) {
+      toast({
+        title: "Unsuccessful",
+        variant: "destructive",
+        description: result.error,
+      });
+      setIsLoading(false);
+      return;
+    }
+    toast({
+      title: "Success",
+      variant: "success",
+      description: "Opening Dashboard",
+    });
+    router.push("/dashboard");
+    setIsLoading(false);
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 relative p-4">
-      <div className="absolute inset-0 bg-[url('/placeholder.svg?height=1080&width=1920')] bg-cover bg-center opacity-5"></div>
+      <div className="absolute inset-0 bg-[url('/background.jpg')] bg-cover bg-center opacity-30"></div>
 
       <main className="w-full max-w-md space-y-8 relative z-10">
         <div className="bg-gray-800 p-8 rounded-lg shadow-2xl border border-gray-700">
@@ -29,49 +55,49 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form className="space-y-6" action="#" method="POST">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-5">
               <div>
-                <Label
+                <label
                   htmlFor="username"
                   className="text-gray-300 text-sm font-medium mb-1 block"
                 >
                   Username
-                </Label>
+                </label>
                 <div className="relative">
                   <User
                     className="absolute top-2.5 left-3 h-5 w-5 text-gray-500"
                     aria-hidden="true"
                   />
-                  <Input
+                  <input
                     id="username"
                     name="username"
                     type="text"
                     required
-                    className="pl-10 w-full bg-gray-700 text-white placeholder-gray-400 border-gray-600 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                    className="pl-10 py-2 w-full bg-gray-700 text-white placeholder-gray-400 border border-gray-600 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
                     placeholder="Enter your username"
                   />
                 </div>
               </div>
 
               <div>
-                <Label
+                <label
                   htmlFor="password"
                   className="text-gray-300 text-sm font-medium mb-1 block"
                 >
                   Password
-                </Label>
+                </label>
                 <div className="relative">
                   <Lock
                     className="absolute top-2.5 left-3 h-5 w-5 text-gray-500"
                     aria-hidden="true"
                   />
-                  <Input
+                  <input
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
                     required
-                    className="pl-10 pr-10 w-full bg-gray-700 text-white placeholder-gray-400 border-gray-600 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                    className="pl-10 py-2 pr-10 w-full bg-gray-700 text-white placeholder-gray-400 border border-gray-600 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
                     placeholder="Enter your password"
                   />
                   <button
@@ -99,31 +125,35 @@ export default function LoginPage() {
             </div>
 
             <div className="flex items-center">
-              <Checkbox
-                id="accept-terms"
+              <input
+                id="acceptTerms"
+                name="acceptTerms"
+                type="checkbox"
                 checked={acceptTerms}
-                onCheckedChange={(checked) =>
-                  setAcceptTerms(checked as boolean)
-                }
-                className="border-gray-600 text-blue-500 focus:ring-blue-500"
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                className="h-4 w-4 border-gray-600 text-blue-500 focus:ring-blue-500"
+                required
               />
-              <Label
-                htmlFor="accept-terms"
+              <label
+                htmlFor="acceptTerms"
                 className="ml-2 block text-sm text-gray-300"
               >
                 I accept the terms and conditions
-              </Label>
+              </label>
             </div>
 
             <div>
-              <Button
+              <button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out"
-                disabled={!acceptTerms}
+                disabled={!acceptTerms || isLoading}
+                className="w-full bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Sign in
-              </Button>
+                {isLoading ? "Signing in..." : "Sign in"}
+              </button>
             </div>
+            {error && (
+              <p className="text-red-500 text-sm mt-2 text-center">{error}</p>
+            )}
           </form>
         </div>
       </main>

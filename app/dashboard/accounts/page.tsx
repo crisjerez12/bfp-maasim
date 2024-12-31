@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Users, Plus, Edit } from "lucide-react";
 import { AddUserDialog } from "@/components/add-user-dialog";
 import { UpdateUserDialog } from "@/components/update-user-dialog";
@@ -13,13 +13,34 @@ interface User {
 }
 
 export default function AccountsPage() {
-  const [users, setUsers] = useState<User[]>([
-    { id: 1, firstName: "John", lastName: "Doe", username: "johndoe" },
-    { id: 2, firstName: "Jane", lastName: "Smith", username: "janesmith" },
-  ]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [isUpdateUserDialogOpen, setIsUpdateUserDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  console.log(error);
+  console.log(isLoading);
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch("/api/fsic/users");
+        const result = await response.json();
+        if (result.success) {
+          setUsers(result.data);
+        } else {
+          setError("Failed to fetch users");
+        }
+      } catch (err) {
+        setError("An error occurred while fetching users");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const addUser = (userData: {
     firstName: string;
@@ -93,7 +114,7 @@ export default function AccountsPage() {
             </thead>
             <tbody>
               {users.map((user) => (
-                <tr key={user.id} className="border-b border-gray-700">
+                <tr key={user.username} className="border-b border-gray-700">
                   <td className="p-3">{user.firstName}</td>
                   <td className="p-3">{user.lastName}</td>
                   <td className="p-3">{user.username}</td>

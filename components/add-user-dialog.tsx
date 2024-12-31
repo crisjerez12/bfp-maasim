@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
+import { createUser } from "@/app/actions/auth";
 
 interface AddUserFormData {
   firstName: string;
@@ -16,11 +17,7 @@ interface AddUserDialogProps {
   onAddUser: (user: AddUserFormData) => void;
 }
 
-export function AddUserDialog({
-  isOpen,
-  onClose,
-  onAddUser,
-}: AddUserDialogProps) {
+export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
   const {
     register,
     handleSubmit,
@@ -28,10 +25,22 @@ export function AddUserDialog({
     reset,
   } = useForm<AddUserFormData>();
 
-  const onSubmit = (data: AddUserFormData) => {
-    onAddUser(data);
-    reset();
-    onClose();
+  const onSubmit = async (data: AddUserFormData) => {
+    const formData = new FormData();
+    formData.append("firstName", data.firstName);
+    formData.append("lastName", data.lastName);
+    formData.append("username", data.username);
+    formData.append("password", data.password);
+
+    const result = await createUser(formData);
+
+    if (result.success) {
+      reset();
+      onClose();
+    } else {
+      // Handle error (e.g., show an error message)
+      console.error(result.message);
+    }
   };
 
   if (!isOpen) return null;
