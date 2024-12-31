@@ -30,7 +30,6 @@ import { deleteEstablishment } from "@/app/actions/establishment-actions";
 import Loading from "./loading";
 import { PaymentStatusDialog } from "@/components/PaymentStatusDialog";
 import { CertificateDialog } from "@/components/CertificateDialog";
-import CertificateDownloadButton from "@/components/CertificateDownloadButton";
 
 interface FSICData {
   _id: string;
@@ -60,14 +59,6 @@ interface FSICData {
   updatedAt: string;
   dueDate?: { month: string; day: string };
   establishmentStatus?: string;
-}
-
-interface CertificateFormData {
-  certificateType: string;
-  amountPaid: string;
-  orNumber: string;
-  chiefFSES: string;
-  fireMarshal: string;
 }
 
 export default function FSICDetails() {
@@ -168,7 +159,7 @@ export default function FSICDetails() {
     }
   };
 
-  const handleDownload = (type: "certificate" | "receipt") => {
+  const handleDownload = (type: "receipt") => {
     // Implement download functionality
     console.log(`Downloading ${type}...`);
   };
@@ -179,60 +170,12 @@ export default function FSICDetails() {
     inspectionDate: Date | undefined;
     establishmentStatus: string;
   }) => {
-    console.log("Payment Status Update:", data);
     setFsicData((prevData) => ({
       ...prevData!,
       dueDate: data.dueDate,
       inspectionDate: data.inspectionDate,
       establishmentStatus: data.establishmentStatus,
     }));
-  };
-
-  const handleCertificateDownload = async (formData: CertificateFormData) => {
-    try {
-      const certificateInfo = {
-        fsicNumber: `R ${String(fsicData?.fsicNumber).padStart(
-          2,
-          "0"
-        )}-${new Date().getFullYear().toString().slice(2)}`,
-        establishmentName: fsicData?.establishmentName || "",
-        owner: fsicData?.owner || "",
-        address: fsicData?.address || "",
-        purpose: formData.certificateType,
-        certificateType: formData.certificateType,
-        amountPaid: formData.amountPaid,
-        orNumber: formData.orNumber,
-        chiefFSES: formData.chiefFSES,
-        fireMarshal: formData.fireMarshal,
-      };
-
-      // Use CertificateDownloadButton to generate the certificate
-      const onGenerate = (blob: Blob) => {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `FSIC-${certificateInfo.fsicNumber}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      };
-
-      <CertificateDownloadButton
-        info={certificateInfo}
-        onGenerate={onGenerate}
-      />;
-
-      setIsCertDialogOpen(false);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `Failed to generate certificate. ${
-          error instanceof Error ? error.message : ""
-        }`,
-      });
-    }
   };
 
   if (!fsicData) {
@@ -249,8 +192,8 @@ export default function FSICDetails() {
         </Link>
 
         <h1 className="text-3xl font-bold">FSIC Details</h1>
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex space-x-2 flex-wrap">
+        <div className="flex justify-between items-center mb-6 mt-4">
+          <div className="flex  flex-wrap gap-2">
             <PaymentStatusDialog
               id={fsicData._id}
               onStatusUpdate={handlePaymentStatusUpdate}
@@ -263,7 +206,7 @@ export default function FSICDetails() {
               <Download className="mr-2 h-4 w-4" /> Receipt
             </Button>
             <Button
-              onClick={() => setIsCertDialogOpen(true)} // Updated certificate button click handler
+              onClick={() => setIsCertDialogOpen(true)}
               className="bg-blue-600 hover:bg-blue-500 text-white transition-colors duration-200"
             >
               <FileText className="mr-2 h-4 w-4" /> Certificate
@@ -516,9 +459,13 @@ export default function FSICDetails() {
         <CertificateDialog
           isOpen={isCertDialogOpen}
           onClose={() => setIsCertDialogOpen(false)}
-          onSubmit={handleCertificateDownload}
+          onSubmit={(data) => {
+            // Handle the form submission if needed
+            console.log(data);
+            setIsCertDialogOpen(false);
+          }}
           defaultValues={{
-            certificateType: "Business Permit",
+            certificateType: "",
             amountPaid: "",
             orNumber: "",
             chiefFSES: "",

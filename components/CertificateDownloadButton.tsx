@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { CertificateInfo } from "./FSICCertificate";
 
@@ -18,7 +17,11 @@ const CertificateDownloadButton: React.FC<CertificateDownloadButtonProps> = ({
     onGenerate(blob);
   };
 
-  return <Button onClick={handleClick}>Generate Certificate</Button>;
+  return (
+    <Button className="bg-blue-800 hover:bg-blue-950" onClick={handleClick}>
+      Generate Certificate
+    </Button>
+  );
 };
 
 export default CertificateDownloadButton;
