@@ -5,6 +5,7 @@ import User from "@/lib/models/user";
 import bcryptjs from "bcryptjs";
 import { cookies } from "next/headers";
 import { encrypt, decrypt } from "@/lib/encryption";
+import { TUser } from "@/lib/type";
 
 export async function authenticate(formData: FormData) {
   try {
@@ -84,6 +85,52 @@ export async function createUser(formData: FormData) {
   }
 }
 
+export async function updateUser(data: TUser) {
+  try {
+    await connectToMongoDB();
+    const { _id, username, password, firstName, lastName } = data;
+
+    if (!_id)
+      // Check if _id is missing
+      throw new Error("User ID is missing");
+
+    // Validate if the user exists
+    const user = await User.findById(_id);
+    if (!user) throw new Error("The User ID is invalid");
+
+    // Check for duplicate username
+    const duplicate = await User.findOne({ username });
+    if (duplicate && duplicate._id.toString() !== _id) {
+      throw new Error("The username is already taken");
+    }
+
+    // Prepare updated credentials
+    const updatedCredentials: Partial<TUser> = {
+      username,
+      firstName,
+      lastName,
+    };
+    if (password) {
+      updatedCredentials.password = await bcryptjs.hash(password, 10);
+    }
+    const updatedUser = await User.findByIdAndUpdate(_id, updatedCredentials, {
+      new: true,
+    });
+
+    if (!updatedUser) throw new Error("Failed to update the user");
+
+    return { success: true, message: "User updated successfully" };
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error.stack); // Logs stack trace if available
+      return { success: false, message: error.message };
+    }
+    // Fallback for unexpected error types
+    console.error("Unknown error:", error);
+    return { success: false, message: "An unexpected error occurred." };
+  }
+}
+
 export async function getAuthenticatedUser() {
   const cookieStore = cookies();
   const authToken = cookieStore.get("authToken");
@@ -99,4 +146,7 @@ export async function getAuthenticatedUser() {
     console.error("Error decrypting auth token:", error);
     return null;
   }
+}
+export async function logout() {
+  cookies().delete("authToken");
 }

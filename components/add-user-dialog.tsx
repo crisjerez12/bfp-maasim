@@ -14,7 +14,6 @@ interface AddUserFormData {
 interface AddUserDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddUser: (user: AddUserFormData) => void;
 }
 
 export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {

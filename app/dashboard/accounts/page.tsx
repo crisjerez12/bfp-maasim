@@ -4,26 +4,16 @@ import { useEffect, useState } from "react";
 import { Users, Plus, Edit } from "lucide-react";
 import { AddUserDialog } from "@/components/add-user-dialog";
 import { UpdateUserDialog } from "@/components/update-user-dialog";
-
-interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  username: string;
-}
+import { TUser } from "@/lib/type";
 
 export default function AccountsPage() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<TUser[]>([]);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [isUpdateUserDialogOpen, setIsUpdateUserDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<TUser | null>(null);
   const [error, setError] = useState("");
-  console.log(error);
-  console.log(isLoading);
   useEffect(() => {
     const fetchUsers = async () => {
-      setIsLoading(true);
       try {
         const response = await fetch("/api/fsic/users");
         const result = await response.json();
@@ -34,56 +24,20 @@ export default function AccountsPage() {
         }
       } catch (err) {
         setError("An error occurred while fetching users");
-      } finally {
-        setIsLoading(false);
       }
     };
 
     fetchUsers();
   }, []);
 
-  const addUser = (userData: {
-    firstName: string;
-    lastName: string;
-    username: string;
-    password: string;
-  }) => {
-    const newUser: User = {
-      id: users.length + 1,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      username: userData.username,
-    };
-    setUsers([...users, newUser]);
-  };
-
-  const updateUser = (
-    userId: number,
-    userData: {
-      firstName: string;
-      lastName: string;
-      username: string;
-      password: string;
-    }
-  ) => {
-    setUsers(
-      users.map((user) =>
-        user.id === userId
-          ? {
-              ...user,
-              firstName: userData.firstName,
-              lastName: userData.lastName,
-              username: userData.username,
-            }
-          : user
-      )
-    );
-  };
-
-  const openUpdateDialog = (user: User) => {
+  const openUpdateDialog = (user: TUser) => {
     setSelectedUser(user);
     setIsUpdateUserDialogOpen(true);
   };
+  if (error)
+    return (
+      <div className="text-red-500 uppercase text-xl font-bold">{error}</div>
+    );
 
   return (
     <div className="min-h-screen text-white p-8">
@@ -120,7 +74,9 @@ export default function AccountsPage() {
                   <td className="p-3">{user.username}</td>
                   <td className="p-3">
                     <button
-                      onClick={() => openUpdateDialog(user)}
+                      onClick={() => {
+                        openUpdateDialog(user);
+                      }}
                       className="bg-[#3b82f6] text-white p-2 rounded-md flex items-center hover:bg-blue-600 transition-colors"
                     >
                       <Edit className="mr-2 h-4 w-4" />
@@ -137,13 +93,11 @@ export default function AccountsPage() {
       <AddUserDialog
         isOpen={isAddUserDialogOpen}
         onClose={() => setIsAddUserDialogOpen(false)}
-        onAddUser={addUser}
       />
 
       <UpdateUserDialog
         isOpen={isUpdateUserDialogOpen}
         onClose={() => setIsUpdateUserDialogOpen(false)}
-        onUpdateUser={updateUser}
         user={selectedUser}
       />
     </div>

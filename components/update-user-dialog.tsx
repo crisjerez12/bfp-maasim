@@ -1,32 +1,21 @@
 "use client";
 
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
-
-interface UpdateUserFormData {
-  firstName: string;
-  lastName: string;
-  username: string;
-  password: string;
-}
+import { updateUser } from "@/app/actions/auth";
+import { TUser } from "@/lib/type";
+import { toast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 interface UpdateUserDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpdateUser: (userId: number, user: UpdateUserFormData) => void;
-  user: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    username: string;
-  } | null;
+  user: TUser | null;
 }
 
 export function UpdateUserDialog({
   isOpen,
   onClose,
-  onUpdateUser,
   user,
 }: UpdateUserDialogProps) {
   const {
@@ -34,23 +23,34 @@ export function UpdateUserDialog({
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<UpdateUserFormData>();
+  } = useForm<TUser>();
 
   useEffect(() => {
     if (user) {
       reset({
+        _id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
         username: user.username,
-        password: "", // We don't pre-fill the password for security reasons
       });
     }
   }, [user, reset]);
 
-  const onSubmit = (data: UpdateUserFormData) => {
-    if (user) {
-      onUpdateUser(user.id, data);
+  const onSubmit = async (data: TUser) => {
+    const res = await updateUser(data);
+    if (!res.success) {
+      toast({
+        title: "Unsuccessful",
+        variant: "destructive",
+        description: res?.message || "Failed to update the account",
+      });
+      return;
     }
+    toast({
+      title: "Update Success",
+      variant: "success",
+      description: "User Account Updated Successfully",
+    });
     onClose();
   };
 
@@ -66,6 +66,7 @@ export function UpdateUserDialog({
           </button>
         </div>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <input {...register("_id")} type="hidden" />
           <div>
             <input
               {...register("firstName", { required: "First name is required" })}

@@ -8,12 +8,11 @@ import {
   LayoutDashboard,
   Clock,
   Building2,
-  LogOut,
   Menu,
   PlusCircle,
   Archive,
   Minus,
-  UserPen,
+  PenIcon as UserPen,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -21,7 +20,8 @@ import Image from "next/image";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useSidebar, SidebarProvider } from "@/contexts/SidebarContext";
 import { useState, useEffect } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { UserProvider, useUser } from "@/contexts/UserContext";
+import ProfileCard from "./profile";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
@@ -35,9 +35,11 @@ interface NavItemProps {
 }
 export default function Cover({ children }: SidebarProps) {
   return (
-    <SidebarProvider>
-      <CoverContent>{children}</CoverContent>
-    </SidebarProvider>
+    <UserProvider>
+      <SidebarProvider>
+        <CoverContent>{children}</CoverContent>
+      </SidebarProvider>
+    </UserProvider>
   );
 }
 
@@ -47,7 +49,7 @@ function CoverContent({ children }: SidebarProps) {
   const sidebarRef = useRef<HTMLElement>(null);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const pathname = usePathname();
-
+  const { user } = useUser();
   useEffect(() => {
     setShowTitle(true);
   }, []);
@@ -140,49 +142,20 @@ function CoverContent({ children }: SidebarProps) {
                   title="Archives"
                   active={pathname === "/dashboard/archives"}
                 />
-                <NavItem
-                  href="/dashboard/accounts"
-                  icon={UserPen}
-                  title="Accounts"
-                  active={pathname === "/dashboard/accounts"}
-                />
+                {user?.role === "ADMIN" && (
+                  <NavItem
+                    href="/dashboard/accounts"
+                    icon={UserPen}
+                    title="Accounts"
+                    active={pathname === "/dashboard/accounts"}
+                  />
+                )}
               </div>
             </div>
           </nav>
         </ScrollArea>
         <div className="p-4">
-          {sidebarOpen ? (
-            <div className="flex flex-col space-y-2 bg-gradient-to-r from-gray-300 to-gray-400 p-2 rounded-md">
-              <div className="flex items-center  space-x-2 ">
-                <Avatar>
-                  <AvatarImage src="/user-icon.png" alt="user" />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col text-gray-950">
-                  <p className="text-md  font-semibold">
-                    Maria Santos Fernandez
-                  </p>
-                  <p className="text-sm font-medium uppercase">staff</p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                className="w-full justify-center bg-blue-600 text-gray-100 hover:bg-blue-800 hover:text-blue-50 transition-colors duration-200"
-                onClick={() => console.log("Logout")}
-              >
-                <LogOut className="h-5 w-5 mr-2" />
-                Logout
-              </Button>
-            </div>
-          ) : (
-            <Button
-              variant="ghost"
-              className="w-full justify-center text-gray-100 hover:bg-gray-700 hover:text-blue-400 transition-colors duration-200 p-0"
-              onClick={() => console.log("Logout")}
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
-          )}
+          <ProfileCard sidebarOpen={sidebarOpen} />
         </div>
       </aside>
       <main className="flex-1 overflow-y-auto  bg-gray-900">
