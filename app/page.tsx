@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import { Eye, EyeOff, Lock, User, Shield } from "lucide-react";
+import { Eye, EyeOff, Lock, User } from "lucide-react";
 import { authenticate } from "./actions/auth";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-
+import Image from "next/image";
+import bfplogo from "@/public/logo.png";
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -44,8 +45,8 @@ export default function LoginPage() {
       <main className="w-full max-w-md space-y-8 relative z-10">
         <div className="bg-gray-800 p-8 rounded-lg shadow-2xl border border-gray-700">
           <div className="flex flex-col items-center mb-6">
-            <div className="bg-blue-600 p-3 rounded-full mb-4">
-              <Shield className="h-12 w-12 text-white" aria-hidden="true" />
+            <div className=" mb-4">
+              <Image src={bfplogo} height={60} width={60} alt="bfp-logo" />
             </div>
             <h1 className="text-2xl font-bold text-white text-center">
               BFP-FIRE SAFETY ENFORCEMENT INFORMATION SYSTEM

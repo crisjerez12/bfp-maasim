@@ -1,26 +1,32 @@
+"use client";
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { CertificateInfo } from "./FSICCertificate";
-
+import { useReactToPrint } from "react-to-print";
+import PrintableFSICCertificate, { CertificateInfo } from "./FSICCertificate";
 interface CertificateDownloadButtonProps {
   info: CertificateInfo;
-  onGenerate: (blob: Blob) => void;
 }
 
 const CertificateDownloadButton: React.FC<CertificateDownloadButtonProps> = ({
   info,
-  onGenerate,
 }) => {
-  const handleClick = async () => {
-    const { default: FSICCertificate } = await import("./FSICCertificate");
-    const { pdf } = await import("@react-pdf/renderer");
-    const blob = await pdf(<FSICCertificate info={info} />).toBlob();
-    onGenerate(blob);
-  };
+  const contentRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({ contentRef });
 
   return (
-    <Button className="bg-blue-800 hover:bg-blue-950" onClick={handleClick}>
-      Generate Certificate
-    </Button>
+    <>
+      <div style={{ display: "none" }}>
+        <div ref={contentRef}>
+          <PrintableFSICCertificate info={info} />
+        </div>
+      </div>
+      <Button
+        className="bg-blue-800 hover:bg-blue-950"
+        onClick={() => reactToPrintFn()}
+      >
+        Generate Certificate
+      </Button>
+    </>
   );
 };
 

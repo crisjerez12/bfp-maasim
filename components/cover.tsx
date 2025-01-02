@@ -22,7 +22,7 @@ import { useSidebar, SidebarProvider } from "@/contexts/SidebarContext";
 import { useState, useEffect } from "react";
 import { UserProvider, useUser } from "@/contexts/UserContext";
 import ProfileCard from "./profile";
-
+import bfplogo from "@/public/logo.png";
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
@@ -82,7 +82,7 @@ function CoverContent({ children }: SidebarProps) {
             >
               <div className="flex items-center ">
                 <Image
-                  src="/logo.png"
+                  src={bfplogo}
                   alt="BFP-FIRE SAFETY"
                   width={40}
                   height={40}
