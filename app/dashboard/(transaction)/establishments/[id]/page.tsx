@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  Download,
   Edit,
   Trash2,
   ArrowLeft,
@@ -159,11 +158,6 @@ export default function FSICDetails() {
     }
   };
 
-  const handleDownload = (type: "receipt") => {
-    // Implement download functionality
-    console.log(`Downloading ${type}...`);
-  };
-
   const handlePaymentStatusUpdate = (data: {
     id: string;
     dueDate: { month: string; day: string };
@@ -199,12 +193,6 @@ export default function FSICDetails() {
               onStatusUpdate={handlePaymentStatusUpdate}
             />
 
-            <Button
-              onClick={() => handleDownload("receipt")}
-              className="bg-blue-600 hover:bg-blue-500 text-white transition-colors duration-200"
-            >
-              <Download className="mr-2 h-4 w-4" /> Receipt
-            </Button>
             <Button
               onClick={() => setIsCertDialogOpen(true)}
               className="bg-blue-600 hover:bg-blue-500 text-white transition-colors duration-200"
@@ -459,9 +447,7 @@ export default function FSICDetails() {
         <CertificateDialog
           isOpen={isCertDialogOpen}
           onClose={() => setIsCertDialogOpen(false)}
-          onSubmit={(data) => {
-            // Handle the form submission if needed
-            console.log(data);
+          onSubmit={() => {
             setIsCertDialogOpen(false);
           }}
           defaultValues={{
@@ -470,6 +456,10 @@ export default function FSICDetails() {
             orNumber: "",
             chiefFSES: "",
             fireMarshal: "",
+            purpose: "FOR CERTIFICATE OF OCCUPANCY",
+            otherPurpose: "",
+            description: "",
+            orDate: "",
           }}
           establishmentInfo={{
             fsicNumber: fsicData?.fsicNumber,

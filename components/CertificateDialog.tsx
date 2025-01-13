@@ -57,6 +57,7 @@ export function CertificateDialog({
     chiefFSES: (defaultValues?.chiefFSES || "").toUpperCase(),
     fireMarshal: (defaultValues?.fireMarshal || "").toUpperCase(),
     description: (defaultValues?.description || "").toUpperCase(),
+    orDate: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -132,20 +133,6 @@ export function CertificateDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="certificateType">Certificate Type</Label>
-              <Input
-                id="certificateType"
-                value={formData.certificateType}
-                className="border-slate-950"
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    certificateType: e.target.value.toUpperCase(),
-                  })
-                }
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="amountPaid">Amount Paid</Label>
               <Input
                 id="amountPaid"
@@ -169,6 +156,21 @@ export function CertificateDialog({
                   setFormData({
                     ...formData,
                     orNumber: e.target.value.toUpperCase(),
+                  })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="orDate">OR Date</Label>
+              <Input
+                id="orDate"
+                type="date"
+                value={formData.orDate}
+                className="border-slate-950"
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    orDate: e.target.value,
                   })
                 }
               />
