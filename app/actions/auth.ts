@@ -1,11 +1,11 @@
 "use server";
 
 import connectToMongoDB from "@/lib/connection";
-import User from "@/lib/models/user";
 import bcryptjs from "bcryptjs";
 import { cookies } from "next/headers";
 import { encrypt, decrypt } from "@/lib/encryption";
 import { TUser } from "@/lib/type";
+import UserModel from "@/lib/models/user";
 
 export async function authenticate(formData: FormData) {
   try {
@@ -16,7 +16,7 @@ export async function authenticate(formData: FormData) {
       return { error: "Username and password are required." };
     }
 
-    const user = await User.findOne({ username });
+    const user = await UserModel.findOne({ username });
     if (!user) {
       return { error: "Invalid username or password." };
     }
@@ -52,7 +52,7 @@ export async function createUser(formData: FormData) {
     await connectToMongoDB();
 
     // Count existing users
-    const userCount = await User.countDocuments();
+    const userCount = await UserModel.countDocuments();
 
     // Determine the role based on user count
     const role = userCount === 0 ? "ADMIN" : "STAFF";
@@ -68,7 +68,7 @@ export async function createUser(formData: FormData) {
     const hashedPassword = await bcryptjs.hash(password, saltRounds);
 
     // Create and save the new user
-    const newUser = new User({
+    const newUser = new UserModel({
       firstName,
       lastName,
       username,
@@ -95,11 +95,11 @@ export async function updateUser(data: TUser) {
       throw new Error("User ID is missing");
 
     // Validate if the user exists
-    const user = await User.findById(_id);
+    const user = await UserModel.findById(_id);
     if (!user) throw new Error("The User ID is invalid");
 
     // Check for duplicate username
-    const duplicate = await User.findOne({ username });
+    const duplicate = await UserModel.findOne({ username });
     if (duplicate && duplicate._id.toString() !== _id) {
       throw new Error("The username is already taken");
     }
@@ -113,9 +113,13 @@ export async function updateUser(data: TUser) {
     if (password) {
       updatedCredentials.password = await bcryptjs.hash(password, 10);
     }
-    const updatedUser = await User.findByIdAndUpdate(_id, updatedCredentials, {
-      new: true,
-    });
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      _id,
+      updatedCredentials,
+      {
+        new: true,
+      }
+    );
 
     if (!updatedUser) throw new Error("Failed to update the user");
 

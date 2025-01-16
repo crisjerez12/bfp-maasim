@@ -1,6 +1,5 @@
 import mongoose, { Schema } from "mongoose";
 
-// Define the interface for the User document
 export interface IUser {
   username: string;
   password: string;
@@ -11,7 +10,6 @@ export interface IUser {
   updatedAt: Date;
 }
 
-// Create the schema for the User model
 const UserSchema: Schema = new Schema(
   {
     username: {

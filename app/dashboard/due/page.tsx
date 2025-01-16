@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, AlertCircle, User, Building, Phone } from "lucide-react";
+import {
+  Calendar,
+  AlertCircle,
+  User,
+  Building,
+  Phone,
+  Map,
+} from "lucide-react";
 
 interface DueData {
   id: string;
@@ -117,6 +124,7 @@ export default function DuesPage() {
                     <span className="flex-1">{due.mobile}</span>
                   </div>
                   <div className="flex items-start">
+                    <Map className="mr-2 h-5 w-5 text-green-400 flex-shrink-0" />
                     <span className="font-semibold mr-2">Address:</span>
                     <span className="flex-1">{due.address}</span>
                   </div>

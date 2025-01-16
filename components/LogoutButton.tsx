@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { toast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 interface LogoutButtonProps {
   size?: "default" | "sm" | "lg" | "icon";
@@ -15,10 +16,12 @@ export function LogoutButton({
   showWords = true,
 }: LogoutButtonProps) {
   const { logout } = useUser();
-
+  const router = useRouter();
   const handleLogout = async () => {
     try {
       await logout();
+      router.push("/");
+
       toast({
         title: "Logging out",
         variant: "success",

@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
 import { createUser } from "@/app/actions/auth";
+import { toast } from "@/hooks/use-toast";
 
 interface AddUserFormData {
   firstName: string;
@@ -34,10 +35,19 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
     const result = await createUser(formData);
 
     if (result.success) {
+      toast({
+        title: "Success",
+        variant: "success",
+        description: "Account created",
+      });
       reset();
       onClose();
     } else {
-      // Handle error (e.g., show an error message)
+      toast({
+        title: "Failed",
+        variant: "destructive",
+        description: "Failed to create the user",
+      });
       console.error(result.message);
     }
   };
