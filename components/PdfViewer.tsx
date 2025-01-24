@@ -115,7 +115,7 @@ const MyDocument: React.FC<{ data: EstablishmentDocument[] }> = ({ data }) => (
           <Text style={styles.headerCell}>Compliance</Text>
           <Text style={styles.headerCell}>Payment Status</Text>
           <Text style={styles.headerCell}>Last Update</Text>
-          <Text style={styles.headerCell}>Contact</Text>
+          <Text style={styles.headerCell}>Active Status</Text>
         </View>
         {data.map((item, index) => (
           <View key={item._id} style={styles.row}>
@@ -134,6 +134,9 @@ const MyDocument: React.FC<{ data: EstablishmentDocument[] }> = ({ data }) => (
               {new Date(item.updatedAt).toLocaleDateString()}
             </Text>
             <Text style={styles.cell}>{item.mobile}</Text>
+            <Text style={styles.cell}>
+              {item.isActive ? "Active" : "not Active"}
+            </Text>
           </View>
         ))}
       </View>
