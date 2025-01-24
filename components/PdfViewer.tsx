@@ -195,7 +195,7 @@ const PdfViewer: React.FC = () => {
       className="bg-blue-800 hover:bg-blue-900"
     >
       <DownloadIcon />
-      {isLoading ? "Loading..." : "Download Establishments"}
+      {isLoading ? "Loading..." : "Download"}
     </Button>
   );
 };
