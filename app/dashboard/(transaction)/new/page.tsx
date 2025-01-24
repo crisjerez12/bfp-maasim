@@ -41,6 +41,7 @@ export default function FsicForm() {
       });
 
       const response = await createFsicEntry(formData);
+      console.log(response);
       if (response.success) {
         toast({
           title: "Success",

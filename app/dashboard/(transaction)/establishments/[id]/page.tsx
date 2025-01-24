@@ -25,10 +25,14 @@ import {
 } from "@/components/ui/dialog";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-import { deleteEstablishment } from "@/app/actions/establishment-actions";
+import {
+  deleteEstablishment,
+  updateCompliance,
+} from "@/app/actions/establishment-actions";
 import Loading from "./loading";
 import { PaymentStatusDialog } from "@/components/PaymentStatusDialog";
 import { CertificateDialog } from "@/components/CertificateDialog";
+import { Switch } from "@/components/ui/switch";
 
 interface FSICData {
   _id: string;
@@ -56,6 +60,7 @@ interface FSICData {
   mobile: string;
   isActive: boolean;
   updatedAt: string;
+  compliance: string;
   dueDate?: { month: string; day: string };
   establishmentStatus?: string;
 }
@@ -286,6 +291,35 @@ export default function FSICDetails() {
                 </div>
               </DialogContent>
             </Dialog>
+            <div className="flex items-center bg-blue-500 px-2 py-2 rounded-md text-black space-x-2">
+              <Switch
+                checked={fsicData.compliance === "Compliant"}
+                onCheckedChange={async () => {
+                  const result = await updateCompliance(fsicData._id);
+                  if (result.success) {
+                    setFsicData((prev) => ({
+                      ...prev!,
+                      compliance:
+                        prev!.compliance === "Compliant"
+                          ? "Non-Compliant"
+                          : "Compliant",
+                    }));
+                    toast({
+                      title: "Success",
+                      variant: "success",
+                      description: result.message,
+                    });
+                  } else {
+                    toast({
+                      variant: "destructive",
+                      title: "Error",
+                      description: result.message,
+                    });
+                  }
+                }}
+              />
+              <p>Set Compliance</p>
+            </div>
           </div>
         </div>
 
@@ -336,6 +370,12 @@ export default function FSICDetails() {
                 <div className="flex justify-between">
                   <span className="font-semibold">Establishment Status:</span>
                   <span>{fsicData.establishmentStatus || "Not set"}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold">Compliance:</span>
+                  <div className="flex items-center space-x-2">
+                    <span>{fsicData.compliance}</span>
+                  </div>
                 </div>
               </div>
             </CardContent>

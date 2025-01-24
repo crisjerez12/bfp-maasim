@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Building, Users, Calendar } from "lucide-react";
+import PdfViewer from "@/components/PdfViewer";
 
 interface AnalyticsData {
   totalRecordedEstablishments: number;
@@ -122,6 +123,16 @@ export default function AnalyticsPage() {
                   <p className="text-4xl font-bold">
                     <AnimatedNumber value={analyticsData.dueThisMonth} />
                   </p>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-gray-800 to-gray-700 border-gray-600 shadow-lg text-white">
+                <CardHeader className="border-b border-gray-600 pb-4">
+                  <CardTitle className="text-xl font-semibold flex items-center">
+                    Download all the establishment
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4 ">
+                  <PdfViewer />
                 </CardContent>
               </Card>
             </>

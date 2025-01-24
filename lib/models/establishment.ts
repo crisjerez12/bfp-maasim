@@ -58,6 +58,7 @@ export const EstablishmentSchema = z.object({
       message: "This field is required",
     }),
   landline: z.string().optional(),
+  compliance: z.string().default("Compliant"),
   mobile: z.string().refine((val) => val !== undefined, {
     message: "This field is required",
   }),
@@ -65,8 +66,8 @@ export const EstablishmentSchema = z.object({
   isActive: z.boolean().default(true),
   dueDate: z
     .object({
-      month: z.string(),
-      day: z.string(),
+      month: z.date().optional(),
+      day: z.date().optional(),
     })
     .optional(),
   inspectionDate: z.date().optional(),
@@ -106,11 +107,15 @@ const establishmentSchema = new mongoose.Schema(
     mobile: { type: String, required: true },
     isActive: { type: Boolean, default: true },
     establishmentStatus: { type: String, default: "Pending" },
-    dueDate: {
-      month: String,
-      day: String,
+    compliance: {
+      type: String,
+      default: "Compliant",
     },
-    inspectionDate: Date,
+    dueDate: {
+      month: { type: String, require: false },
+      day: { type: String, require: false },
+    },
+    inspectionDate: { type: Date, require: false },
   },
   {
     timestamps: true,
@@ -118,10 +123,10 @@ const establishmentSchema = new mongoose.Schema(
 );
 
 // Mongoose model
-export const Establishment =
+const Establishment =
   mongoose.models.Establishment ||
   mongoose.model("Establishment", establishmentSchema);
-
+export default Establishment;
 // Type for the Establishment document
 export type EstablishmentDocument = mongoose.Document &
   z.infer<typeof EstablishmentSchema>;

@@ -1,6 +1,6 @@
 "use server";
 
-import { EstablishmentSchema, Establishment } from "@/lib/models/establishment";
+import Establishment, { EstablishmentSchema } from "@/lib/models/establishment";
 import connectToMongoDB from "@/lib/connection";
 
 export async function createFsicEntry(formData: FormData) {
@@ -72,7 +72,7 @@ export async function updateFsicEntry(formData: FormData) {
   if (typeof parsedData.mobile === "string") {
     parsedData.mobile = parsedData.mobile.replace(/^(\+639|9)/, "9");
   }
-
+  console.log(parsedData);
   try {
     const validationResult = EstablishmentSchema.safeParse(parsedData);
     if (!validationResult.success) {
@@ -203,6 +203,31 @@ export async function updatePaymentStatus(
     return {
       success: false,
       message: "An error occurred while updating the payment status",
+    };
+  }
+}
+export async function updateCompliance(id: string) {
+  try {
+    const establishment = await Establishment.findById(id);
+
+    if (!establishment) {
+      return { success: false, message: "Establishment not found" };
+    }
+
+    establishment.compliance =
+      establishment.compliance === "Compliant" ? "Non-Compliant" : "Compliant";
+
+    await establishment.save();
+
+    return {
+      success: true,
+      message: `Set to ${establishment.compliance}`,
+    };
+  } catch (error) {
+    console.error("Error updating compliance:", error);
+    return {
+      success: false,
+      message: "An error occurred while updating compliance",
     };
   }
 }

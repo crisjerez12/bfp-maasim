@@ -1,25 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = ["/"];
-const ADMIN_ROUTES = [
-  "/dashboard",
-  "/dashboard/due",
-  "/dashboard/accounts",
-  "/dashboard/archives",
-  "/dashboard/establishments",
-];
-const STAFF_ROUTES = [
-  "/dashboard",
-  "/dashboard/due",
-  "/dashboard/accounts",
-  "/dashboard/archives",
-  "/dashboard/new",
-  "/dashboard/establishments",
-];
-
 export function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
-  const isPublicRoute = PUBLIC_ROUTES.includes(path);
 
   // Check if the auth cookie exists
   const authToken = req.cookies.get("authToken");
@@ -31,8 +13,9 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  if (isPublicRoute) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+  if (authToken) {
+    if (!path.startsWith("/dashboard"))
+      return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   // Since we can't decrypt the cookie here, we'll allow access to all authenticated users

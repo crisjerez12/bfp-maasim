@@ -23,6 +23,7 @@ import { useState, useEffect } from "react";
 import { UserProvider, useUser } from "@/contexts/UserContext";
 import ProfileCard from "./profile";
 import bfplogo from "@/public/logo.png";
+
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }

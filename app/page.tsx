@@ -40,7 +40,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 relative p-4">
-      <div className="absolute inset-0 bg-[url('/background.jpg')] bg-cover bg-center opacity-30"></div>
+      <div className="absolute inset-0 bg-[url('./assets/background.jpg')] bg-cover bg-center opacity-30"></div>
 
       <main className="w-full max-w-md space-y-8 relative z-10">
         <div className="bg-gray-800 p-8 rounded-lg shadow-2xl border border-gray-700">

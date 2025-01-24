@@ -5,6 +5,9 @@ import { Users, Plus, Edit } from "lucide-react";
 import { AddUserDialog } from "@/components/add-user-dialog";
 import { UpdateUserDialog } from "@/components/update-user-dialog";
 import { TUser } from "@/lib/type";
+import { useUser } from "@/contexts/UserContext";
+import { useRouter } from "next/navigation";
+import { toast } from "@/hooks/use-toast";
 
 export default function AccountsPage() {
   const [users, setUsers] = useState<TUser[]>([]);
@@ -12,6 +15,16 @@ export default function AccountsPage() {
   const [isUpdateUserDialogOpen, setIsUpdateUserDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<TUser | null>(null);
   const [error, setError] = useState("");
+  const { user } = useUser();
+  const router = useRouter();
+  if (user?.role !== "ADMIN") {
+    router.push("/dashboard");
+    toast({
+      title: "Access Denied",
+      variant: "destructive",
+      description: "Admin only page",
+    });
+  }
   useEffect(() => {
     const fetchUsers = async () => {
       try {

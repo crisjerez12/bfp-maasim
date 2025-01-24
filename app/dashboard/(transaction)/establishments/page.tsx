@@ -26,6 +26,7 @@ interface Establishment {
   isInEminentDanger: boolean;
   lastIssuanceType: string;
   barangay: string;
+  compliance: string;
   address: string;
   email: string;
   landline: string;
@@ -247,6 +248,9 @@ export default function EstablishmentInspectionForm() {
                 Eminent Danger
               </th>
               <th className="bg-gray-700 text-gray-100 px-4 py-2">
+                Compliance
+              </th>
+              <th className="bg-gray-700 text-gray-100 px-4 py-2">
                 Payment Status
               </th>
               <th className="bg-gray-700 text-gray-100 px-4 py-2">
@@ -311,6 +315,7 @@ export default function EstablishmentInspectionForm() {
                     <td className="px-4 py-2">
                       {establishment.isInEminentDanger ? "Yes" : "No"}
                     </td>
+                    <td className="px-4 py-2">{establishment.compliance}</td>
                     <td className="px-4 py-2">
                       <div className="flex items-center">
                         <span className="relative flex h-3 w-3 mr-2">

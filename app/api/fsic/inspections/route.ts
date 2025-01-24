@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { Establishment } from "@/lib/models/establishment";
 import connectToMongoDB from "@/lib/connection";
+import Establishment from "@/lib/models/establishment";
 
 export async function GET() {
   try {
@@ -9,7 +9,7 @@ export async function GET() {
     // Get the current date
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
-
+    console.log(typeof new Date(currentDate.getTime() + 24 * 60 * 60 * 1000));
     // Find establishments with inspection date matching the current date
     const establishments = await Establishment.find({
       inspectionDate: {
