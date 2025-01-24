@@ -115,6 +115,7 @@ const MyDocument: React.FC<{ data: EstablishmentDocument[] }> = ({ data }) => (
           <Text style={styles.headerCell}>Compliance</Text>
           <Text style={styles.headerCell}>Payment Status</Text>
           <Text style={styles.headerCell}>Last Update</Text>
+          <Text style={styles.headerCell}>Contact #</Text>
           <Text style={styles.headerCell}>Active Status</Text>
         </View>
         {data.map((item, index) => (
