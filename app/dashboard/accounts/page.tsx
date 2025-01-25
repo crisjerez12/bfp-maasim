@@ -28,7 +28,7 @@ export default function AccountsPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("/api/fsic/users");
+        const response = await fetch("/api/users");
         const result = await response.json();
         if (result.success) {
           setUsers(result.data);
