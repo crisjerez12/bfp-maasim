@@ -66,8 +66,8 @@ export const EstablishmentSchema = z.object({
   isActive: z.boolean().default(true),
   dueDate: z
     .object({
-      month: z.date().optional(),
-      day: z.date().optional(),
+      month: z.string().optional(),
+      day: z.string().optional(),
     })
     .optional(),
   inspectionDate: z.date().optional(),
@@ -112,8 +112,8 @@ const establishmentSchema = new mongoose.Schema(
       default: "Compliant",
     },
     dueDate: {
-      month: { type: String, require: false },
-      day: { type: String, require: false },
+      month: { type: String, default: null },
+      day: { type: String, default: null },
     },
     inspectionDate: { type: Date, require: false },
   },
