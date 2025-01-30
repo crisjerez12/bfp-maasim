@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,28 +10,22 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { AlertTriangle, Loader2, Bell, Volume2, VolumeX } from "lucide-react";
+import { AlertTriangle, Loader2, Bell } from "lucide-react";
+import { useAudio } from "@/contexts/AudioContext";
+
 interface Establishment {
   _id: string;
   establishmentName: string;
-  dueDate: {
-    month: string;
-    day: string;
-  };
+  address: string;
 }
 
 export default function DueEstablishmentsWarning() {
   const [isOpen, setIsOpen] = useState(false);
   const [showMainDialog, setShowMainDialog] = useState(false);
-  const [dueEstablishments, setDueEstablishments] = useState<Establishment[]>(
-    []
-  );
+  const [inspectionsToday, setInspectionsToday] = useState<Establishment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audioError, setAudioError] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
+  const { playSound } = useAudio();
   useEffect(() => {
     const fetchDueEstablishments = async () => {
       try {
@@ -39,7 +33,7 @@ export default function DueEstablishmentsWarning() {
         const response = await fetch("/api/fsic/inspections");
         const data = await response.json();
         if (data.success) {
-          setDueEstablishments(data.data);
+          setInspectionsToday(data.data);
           if (data.data.length > 0) {
             setIsOpen(true);
           }
@@ -68,79 +62,22 @@ export default function DueEstablishmentsWarning() {
     };
   }, []);
 
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.onplay = () => {
-        console.log("Audio started playing");
-        setAudioError(null);
-      };
-      audioRef.current.onerror = (e) => {
-        console.error("Audio error:", e);
-        setAudioError("Failed to load audio file");
-      };
-    }
-  }, []);
-
   const handleInitialDialogClose = () => {
+    playSound();
     setIsOpen(false);
     setShowMainDialog(true);
-    if (audioRef.current) {
-      audioRef.current
-        .play()
-        .then(() => {
-          console.log("Audio played successfully");
-          setIsPlaying(true);
-          setAudioError(null);
-        })
-        .catch((error) => {
-          console.error("Audio playback failed:", error);
-          setAudioError("Failed to play audio: " + error.message);
-        });
-    }
   };
 
   const handleClose = () => {
     setShowMainDialog(false);
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-    setIsPlaying(false);
   };
 
-  const toggleAudio = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current
-          .play()
-          .then(() => {
-            setIsPlaying(true);
-            setAudioError(null);
-          })
-          .catch((error) => {
-            console.error("Audio playback failed:", error);
-            setAudioError("Failed to play audio: " + error.message);
-          });
-      }
-    }
-  };
-
-  if (dueEstablishments.length === 0 && !isLoading && !error) {
+  if (inspectionsToday.length === 0 && !isLoading && !error) {
     return null;
   }
 
   return (
     <>
-      <audio
-        ref={audioRef}
-        src="/notifications.ogg"
-        preload="auto"
-        loop
-        onEnded={() => setIsPlaying(false)}
-      />
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-[400px] bg-white shadow-lg rounded-lg text-blue-900">
           <DialogHeader>
@@ -165,29 +102,19 @@ export default function DueEstablishmentsWarning() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showMainDialog} onOpenChange={setShowMainDialog}>
+      <Dialog
+        open={showMainDialog}
+        onOpenChange={(open) => {
+          setShowMainDialog(open);
+        }}
+      >
         <DialogContent className="sm:max-w-[600px] md:max-w-[700px] lg:max-w-[800px] bg-white shadow-lg rounded-lg text-blue-900">
           <DialogHeader className="border-b border-blue-500/30 pb-4">
             <DialogTitle className="text-3xl font-bold text-blue-900 flex items-center gap-3">
               <AlertTriangle className="w-8 h-8 text-blue-900" />
-              Due Establishments
-              <Button
-                size="icon"
-                variant="ghost"
-                className="ml-auto"
-                onClick={toggleAudio}
-              >
-                {isPlaying ? (
-                  <Volume2 className="w-6 h-6 text-blue-900" />
-                ) : (
-                  <VolumeX className="w-6 h-6 text-blue-900" />
-                )}
-              </Button>
+              Inspections for today
             </DialogTitle>
           </DialogHeader>
-          {audioError && (
-            <p className="text-red-500 text-sm mt-2">{audioError}</p>
-          )}
           <div className="py-6">
             {isLoading ? (
               <div className="flex justify-center items-center">
@@ -197,7 +124,7 @@ export default function DueEstablishmentsWarning() {
               <p className="text-red-500 text-center text-lg">{error}</p>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {dueEstablishments.map((establishment) => (
+                {inspectionsToday.map((establishment: Establishment) => (
                   <Card
                     key={establishment._id}
                     className="bg-white border border-blue-200 shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105"
@@ -210,11 +137,7 @@ export default function DueEstablishmentsWarning() {
                     </CardHeader>
                     <CardContent>
                       <p className="text-sm text-blue-900">
-                        Due Date:{" "}
-                        <span className="font-medium text-blue-900">
-                          {establishment.dueDate.month}{" "}
-                          {establishment.dueDate.day}
-                        </span>
+                        Address: {establishment.address}
                       </p>
                     </CardContent>
                   </Card>

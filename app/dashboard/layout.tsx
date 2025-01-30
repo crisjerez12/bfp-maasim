@@ -1,5 +1,6 @@
 import Cover from "@/components/cover";
 import DueEstablishmentsWarning from "@/components/due-establishments-warning";
+import { AudioProvider } from "@/contexts/AudioContext";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -14,8 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <>
-      <DueEstablishmentsWarning />
-      <Cover>{children}</Cover>
+      <AudioProvider>
+        <DueEstablishmentsWarning />
+        <Cover>{children}</Cover>
+      </AudioProvider>
     </>
   );
 }
