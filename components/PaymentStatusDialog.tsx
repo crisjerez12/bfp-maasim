@@ -71,11 +71,16 @@ export function PaymentStatusDialog({
 
   const onSubmit = async (data: FormData) => {
     const submissionData = {
-      id,
-      ...data,
+      establishmentStatus: data.establishmentStatus,
+      dueDate: {
+        month: data.dueDate.month,
+        day: data.dueDate.day,
+      },
+      inspectionDate: data.inspectionDate,
     };
     await updatePaymentStatus(id, submissionData);
-    onStatusUpdate(submissionData);
+    const statusType = { id, ...submissionData };
+    onStatusUpdate(statusType);
     setIsOpen(false);
   };
 
@@ -97,7 +102,14 @@ export function PaymentStatusDialog({
               <Controller
                 name="dueDate.month"
                 control={control}
-                rules={{ required: "Month is required" }}
+                rules={{
+                  validate: (value, formValues) => {
+                    if (value && !formValues.dueDate.day) {
+                      return "Both month and day are required";
+                    }
+                    return true;
+                  },
+                }}
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger>
@@ -116,6 +128,14 @@ export function PaymentStatusDialog({
               <Controller
                 name="dueDate.day"
                 control={control}
+                rules={{
+                  validate: (value, formValues) => {
+                    if (value && !formValues.dueDate.month) {
+                      return "Both month and day are required";
+                    }
+                    return true;
+                  },
+                }}
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger>
@@ -132,6 +152,16 @@ export function PaymentStatusDialog({
                 )}
               />
             </div>
+            {errors.dueDate?.month && (
+              <p className="text-red-500 text-sm col-span-4">
+                {errors.dueDate.month.message}
+              </p>
+            )}
+            {errors.dueDate?.day && (
+              <p className="text-red-500 text-sm col-span-4">
+                {errors.dueDate.day.message}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">

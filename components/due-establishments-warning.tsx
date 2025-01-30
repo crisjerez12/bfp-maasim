@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { AlertTriangle, Loader2, Bell, Volume2, VolumeX } from "lucide-react";
-
 interface Establishment {
   _id: string;
   establishmentName: string;
@@ -30,6 +29,7 @@ export default function DueEstablishmentsWarning() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -68,14 +68,34 @@ export default function DueEstablishmentsWarning() {
     };
   }, []);
 
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.onplay = () => {
+        console.log("Audio started playing");
+        setAudioError(null);
+      };
+      audioRef.current.onerror = (e) => {
+        console.error("Audio error:", e);
+        setAudioError("Failed to load audio file");
+      };
+    }
+  }, []);
+
   const handleInitialDialogClose = () => {
     setIsOpen(false);
     setShowMainDialog(true);
     if (audioRef.current) {
-      audioRef.current.play().catch((error) => {
-        console.error("Audio playback failed:", error);
-      });
-      setIsPlaying(true);
+      audioRef.current
+        .play()
+        .then(() => {
+          console.log("Audio played successfully");
+          setIsPlaying(true);
+          setAudioError(null);
+        })
+        .catch((error) => {
+          console.error("Audio playback failed:", error);
+          setAudioError("Failed to play audio: " + error.message);
+        });
     }
   };
 
@@ -92,12 +112,19 @@ export default function DueEstablishmentsWarning() {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
+        setIsPlaying(false);
       } else {
-        audioRef.current.play().catch((error) => {
-          console.error("Audio playback failed:", error);
-        });
+        audioRef.current
+          .play()
+          .then(() => {
+            setIsPlaying(true);
+            setAudioError(null);
+          })
+          .catch((error) => {
+            console.error("Audio playback failed:", error);
+            setAudioError("Failed to play audio: " + error.message);
+          });
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -109,28 +136,28 @@ export default function DueEstablishmentsWarning() {
     <>
       <audio
         ref={audioRef}
-        autoPlay={false}
-        src="/notifications.mp3"
+        src="/notifications.ogg"
+        preload="auto"
         loop
         onEnded={() => setIsPlaying(false)}
       />
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[400px] bg-gradient-to-br from-blue-900 to-blue-700 backdrop-blur-md backdrop-filter border border-blue-300/50 shadow-lg rounded-lg text-blue-50">
+        <DialogContent className="sm:max-w-[400px] bg-white shadow-lg rounded-lg text-blue-900">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-yellow-300 flex items-center gap-3">
-              <AlertTriangle className="w-6 h-6 text-yellow-300" />
+            <DialogTitle className="text-2xl font-bold text-blue-900 flex items-center gap-3">
+              <AlertTriangle className="w-6 h-6 text-blue-900" />
               Inspection Alert
             </DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <p className="text-lg text-center text-yellow-100">
+            <p className="text-lg text-center text-blue-900">
               You have an Inspection for today
             </p>
           </div>
           <DialogFooter>
             <Button
               onClick={handleInitialDialogClose}
-              className="bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-semibold px-8 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 border-none text-lg w-full"
+              className="bg-blue-900 hover:bg-blue-800 text-white font-semibold px-8 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 border-none text-lg w-full"
             >
               OK
             </Button>
@@ -139,10 +166,10 @@ export default function DueEstablishmentsWarning() {
       </Dialog>
 
       <Dialog open={showMainDialog} onOpenChange={setShowMainDialog}>
-        <DialogContent className="sm:max-w-[600px] md:max-w-[700px] lg:max-w-[800px] bg-gradient-to-br from-blue-900 to-blue-700 backdrop-blur-md backdrop-filter border border-blue-300/50 shadow-lg rounded-lg text-blue-50">
+        <DialogContent className="sm:max-w-[600px] md:max-w-[700px] lg:max-w-[800px] bg-white shadow-lg rounded-lg text-blue-900">
           <DialogHeader className="border-b border-blue-500/30 pb-4">
-            <DialogTitle className="text-3xl font-bold text-yellow-300 flex items-center gap-3">
-              <AlertTriangle className="w-8 h-8 text-yellow-300" />
+            <DialogTitle className="text-3xl font-bold text-blue-900 flex items-center gap-3">
+              <AlertTriangle className="w-8 h-8 text-blue-900" />
               Due Establishments
               <Button
                 size="icon"
@@ -151,37 +178,40 @@ export default function DueEstablishmentsWarning() {
                 onClick={toggleAudio}
               >
                 {isPlaying ? (
-                  <Volume2 className="w-6 h-6 text-yellow-300" />
+                  <Volume2 className="w-6 h-6 text-blue-900" />
                 ) : (
-                  <VolumeX className="w-6 h-6 text-yellow-300" />
+                  <VolumeX className="w-6 h-6 text-blue-900" />
                 )}
               </Button>
             </DialogTitle>
           </DialogHeader>
+          {audioError && (
+            <p className="text-red-500 text-sm mt-2">{audioError}</p>
+          )}
           <div className="py-6">
             {isLoading ? (
               <div className="flex justify-center items-center">
-                <Loader2 className="w-12 h-12 text-yellow-300 animate-spin" />
+                <Loader2 className="w-12 h-12 text-blue-900 animate-spin" />
               </div>
             ) : error ? (
-              <p className="text-red-300 text-center text-lg">{error}</p>
+              <p className="text-red-500 text-center text-lg">{error}</p>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {dueEstablishments.map((establishment) => (
                   <Card
                     key={establishment._id}
-                    className="bg-yellow-400/20 backdrop-blur-sm border-yellow-400/50 shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                    className="bg-white border border-blue-200 shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                   >
                     <CardHeader>
-                      <CardTitle className="text-lg font-semibold text-yellow-300 flex items-center gap-2">
-                        <Bell className="w-5 h-5" />
+                      <CardTitle className="text-lg font-semibold text-blue-900 flex items-center gap-2">
+                        <Bell className="w-5 h-5 text-blue-900" />
                         {establishment.establishmentName}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-yellow-100">
+                      <p className="text-sm text-blue-900">
                         Due Date:{" "}
-                        <span className="font-medium text-yellow-300">
+                        <span className="font-medium text-blue-900">
                           {establishment.dueDate.month}{" "}
                           {establishment.dueDate.day}
                         </span>
@@ -195,7 +225,7 @@ export default function DueEstablishmentsWarning() {
           <DialogFooter>
             <Button
               onClick={handleClose}
-              className="bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-semibold px-8 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 border-none text-lg"
+              className="bg-blue-900 hover:bg-blue-800 text-white font-semibold px-8 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 border-none text-lg"
             >
               Acknowledge
             </Button>

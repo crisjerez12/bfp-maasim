@@ -81,15 +81,22 @@ function CoverContent({ children }: SidebarProps) {
                 showTitle ? "opacity-100" : "opacity-0"
               )}
             >
-              <div className="flex items-center ">
-                <Image
-                  src={bfplogo}
-                  alt="BFP-FIRE SAFETY"
-                  width={40}
-                  height={40}
-                  className="mr-2"
-                />
-                <span className="text-2xl font-bold">BFP-SYSTEM</span>
+              <div className="bg-gray-700 rounded-lg p-3 shadow-md w-full">
+                <div className="flex items-center">
+                  <Image
+                    src={bfplogo || "/placeholder.svg"}
+                    alt="BFP-FIRE SAFETY"
+                    width={40}
+                    height={40}
+                    className="mr-3"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-lg font-bold">BFP-SYSTEM</span>
+                    <div className="text-xs text-gray-300">
+                      Municipality of Maasim Sarangani Province
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
