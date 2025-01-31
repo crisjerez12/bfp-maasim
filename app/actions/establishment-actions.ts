@@ -2,7 +2,10 @@
 
 import Establishment, { EstablishmentSchema } from "@/lib/models/establishment";
 import connectToMongoDB from "@/lib/connection";
-
+export type Due = {
+  month: string;
+  day: string;
+};
 export async function createFsicEntry(formData: FormData) {
   await connectToMongoDB();
   const rawFormData = Object.fromEntries(formData);
@@ -52,9 +55,11 @@ export async function createFsicEntry(formData: FormData) {
 }
 export async function updateFsicEntry(formData: FormData) {
   await connectToMongoDB();
-  const rawFormData = Object.fromEntries(formData.entries());
+  const rawFormData = Object.fromEntries(formData);
   const id = rawFormData._id as string;
   delete rawFormData._id;
+  delete rawFormData.dueDate;
+  delete rawFormData.inspectionDate;
 
   const parsedData = {
     ...rawFormData,
@@ -72,7 +77,6 @@ export async function updateFsicEntry(formData: FormData) {
   if (typeof parsedData.mobile === "string") {
     parsedData.mobile = parsedData.mobile.replace(/^(\+639|9)/, "9");
   }
-  console.log(parsedData);
   try {
     const validationResult = EstablishmentSchema.safeParse(parsedData);
     if (!validationResult.success) {
