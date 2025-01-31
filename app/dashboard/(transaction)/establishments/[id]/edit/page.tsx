@@ -12,7 +12,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { useParams } from "next/navigation";
-import { Due, updateFsicEntry } from "@/app/actions/establishment-actions";
+import { updateFsicEntry } from "@/app/actions/establishment-actions";
 import { useRouter } from "next/navigation";
 
 const FormField = ({ children }: { children: React.ReactNode }) => (
