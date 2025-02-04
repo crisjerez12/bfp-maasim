@@ -113,7 +113,6 @@ const establishmentSchema = new mongoose.Schema(
     landline: String,
     mobile: { type: String, required: true },
     isActive: { type: Boolean, default: true },
-    establishmentStatus: { type: String, default: "Pending" },
     compliance: {
       type: String,
       default: "Compliant",

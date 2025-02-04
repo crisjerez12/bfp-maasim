@@ -40,7 +40,6 @@ const EstablishmentSchema = z.object({
   compliance: z.string(),
   mobile: z.string(),
   isActive: z.boolean(),
-  establishmentStatus: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
   __v: z.number(),

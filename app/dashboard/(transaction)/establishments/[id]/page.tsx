@@ -72,7 +72,6 @@ interface FSICData {
   updatedAt: string;
   compliance: string;
   dueDate?: { month: string; day: string };
-  establishmentStatus?: string;
   remarks: Remark[];
 }
 
@@ -450,10 +449,6 @@ export default function FSICDetails() {
                       : "Not set"}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="font-semibold">Establishment Status:</span>
-                  <span>{fsicData.establishmentStatus || "Not set"}</span>
-                </div>
                 <div className="flex justify-between items-center">
                   <span className="font-semibold">Compliance:</span>
                   <div className="flex items-center space-x-2">
@@ -557,7 +552,7 @@ export default function FSICDetails() {
                 </div>
                 <div className="flex justify-between">
                   <span className="font-semibold">Landline:</span>
-                  <span>{fsicData.landline}</span>
+                  <span>{fsicData.landline || "Not Set"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-semibold">Mobile:</span>
