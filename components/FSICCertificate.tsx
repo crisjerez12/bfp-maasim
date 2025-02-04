@@ -2,7 +2,6 @@ import React from "react";
 import { format, parseISO } from "date-fns";
 import Image from "next/image";
 import dilgLogo from "@/public/dilg-logo.svg";
-import bfplogo from "@/public/logo.svg";
 
 export interface CertificateInfo {
   fsicNumber: string;
@@ -31,31 +30,33 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
     .padStart(7, "0")
     .replace(/(\d{3})$/, "-$1");
   return (
-    <div className="pt-[0.79cm] px-[0.55cm] w-[21cm] h-[29.7cm] bg-white font-arial">
-      <div className="relative px-[1.7cm] border-double border-4 border-black border-shadow-outside pt-[1cm]">
+    <div className="pt-[0.79cm] px-[0.55cm] w-[21cm] h-[29.7cm] bg-white font-arial text-white">
+      <div className="relative px-[1.7cm] border-double border-4 border-white ">
         <div className="flex justify-center">
           <Image
             src={dilgLogo}
             alt="bfp-logo"
             width="91"
             height="91"
-            className="rounded-full mt-6 absolute left-[50px]"
+            className="rounded-full mt-6 absolute left-[50px] bg-transparent"
           />
           <div className="text-center mb-5 leading-tight">
-            <p className="text-[15px]">Republic of the Philippines</p>
-            <p className="font-bold text-[16px]">
+            <p className="text-[15px] text-white">
+              Republic of the Philippines
+            </p>
+            <p className="font-bold text-[16px] text-white">
               Department of the Interior and Local Government
             </p>
-            <p className="text-[19px] font-bold text-blue-950">
+            <p className="text-[19px] font-bold text-white">
               BUREAU OF FIRE PROTECTION
             </p>
-            <p className=" text-[16px]">Region 12</p>
-            <p className=" text-[16px]">Province of Sarangani</p>
-            <p className=" text-[16px]">Maasim Fire Station</p>
-            <p className=" text-[16px]">
+            <p className=" text-[16px] text-white">Region 12</p>
+            <p className=" text-[16px] text-black">Province of Sarangani</p>
+            <p className=" text-[16px] text-black">Maasim Fire Station</p>
+            <p className=" text-[16px] text-black">
               Municipal Compound, Poblacion, Maasim, Sarangani Province
             </p>
-            <p className=" text-[16px] italic font-serif">
+            <p className=" text-[16px] italic font-serif text-black">
               Hotline No. 09124588541/09656333570 Email Add:
               <span className="underline text-blue-700">
                 maasimfirestation@gmail.com
@@ -63,73 +64,53 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
             </p>
           </div>
           <Image
-            src={bfplogo}
+            src={dilgLogo}
             alt="bfp-logo"
             width="91"
             height="91"
-            className="rounded-full mt-6 absolute right-[50px]"
+            className="rounded-full mt-6 absolute right-[50px] opacity-0"
           />
         </div>
         {/* Subheader */}
         <div className=" flex px-5 justify-between">
-          <div className="flex   text-[22px] font-bold text-red-600">
+          <div className="flex   text-[22px] font-bold ">
             <p>FSIC NO. R</p>
-            <p className="underline text-center decoration-2">
+            <p className=" text-center decoration-2 text-red-600">
               12-{formatedFSICNumber}
             </p>
           </div>
           <div className="flex flex-col items-center mt-2">
-            <div className="underline decoration-2  text-center font-bold text-[15px]">
+            <div className=" decoration-2  text-center font-bold text-[15px] text-black">
               &nbsp;&nbsp;&nbsp; {format(new Date(), "MM/dd/yyyy")}
               &nbsp;&nbsp;&nbsp;
             </div>
             <p>Date</p>
           </div>
         </div>
-        <div className=" flex flex-col mt-4 text-center mb-6 items-center text-blue-950 leading-[1.15] font-bold">
+        <div className=" flex flex-col mt-4 text-center mb-6 items-center  leading-[1.15] font-bold">
           <p className="font-bold text-[26px]">
             FIRE SAFETY INSPECTION CERTIFICATE
           </p>
           <div className="flex flex-col items-start text-[16px] space-y-[2px]">
             <div className="flex items-center space-x-2">
-              <div
-                className={`w-[0.42cm] h-[0.43cm] border-[1px] border-blue-950 flex items-center justify-center ${
-                  info.purpose === "FOR CERTIFICATE OF OCCUPANCY"
-                    ? "bg-black"
-                    : ""
-                }`}
-              ></div>
+              <div className="w-[0.42cm] h-[0.43cm]   flex items-center justify-center "></div>
               <p>FOR CERTIFICATE OF OCCUPANCY </p>
             </div>
             <div className="flex items-center space-x-2">
-              <div
-                className={`w-[0.42cm] h-[0.43cm] border-[1px] border-blue-950 flex items-center justify-center ${
-                  info.purpose === "FOR BUSINESS PERMIT (NEW/RENEWAL)"
-                    ? "bg-black"
-                    : ""
-                }`}
-              ></div>
+              <div className="w-[0.42cm] h-[0.43cm]   flex items-center justify-center "></div>
               <p>FOR BUSINESS PERMIT (NEW/RENEWAL)</p>
             </div>
             <div className="flex items-center space-x-2">
-              <div
-                className={`w-[0.42cm] h-[0.43cm] border-[1px] border-blue-950 flex items-center justify-center ${
-                  info.purpose === "OTHERS" ? "bg-black" : ""
-                }`}
-              ></div>
+              <div className="w-[0.42cm] h-[0.43cm]  flex items-center justify-center "></div>
               <div className="flex space-x-1 min-w-[300px]">
                 <p>OTHERS</p>
-
-                <p className=" flex-1 border-b-[1px] border-blue-950 text-left pl-2">
-                  {info.purpose === "OTHERS" ? info.otherPurpose : ""}
-                </p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="leading-[1.3] text-[13px]">
+        <div className="leading-[1.3] text-[13px] ">
           <p className="text-[15px] font-bold ">TO WHOM IT MAY CONCERN:</p>
           <p className="text-[11px]">&nbsp;</p>
           <p className="indent-14">
@@ -147,7 +128,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
             <p className="font-bold">CERTIFICATE</p>
             <p>of:</p>
           </div>
-          <p className="w-full border-b-2 border-black text-center">
+          <p className="w-full  text-center text-black">
             {info.establishmentName}
           </p>
 
@@ -156,15 +137,13 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
           </p>
           <div className="flex space-x-1 justify-between">
             <p className="text-nowrap">owned and managed by</p>
-            <p className="w-full border-b-2 border-black text-center">
-              {info.owner}
-            </p>
+            <p className="w-full  text-center text-black">{info.owner}</p>
             <p className="text-nowrap">with postal address at</p>
           </div>
           <p className="text-center italic text-[12px]">
             (Name of Owner/Representative)
           </p>
-          <p className="w-full border-b-2 border-black text-center italize">
+          <p className="w-full text-center italize text-black">
             {info.address}
           </p>
           <p className="text-center text-[12px] italic">(Address)</p>
@@ -180,11 +159,11 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
           <div className="mt-2 ml-12 flex space-x-2">
             <p className="text-nowrap">This certification is valid for </p>
             <div className="flex flex-col items-start w-full text-center">
-              <p className="w-full border-b-2 border-black  whitespace-pre-wrap bg-yellow-300">
+              <p className="w-full  whitespace-pre-wrap text-black">
                 <span>{info.description}</span>
               </p>
               <p className="text-center w-full italic ">
-                <span className="bg-yellow-300 text-[12px]">(Description)</span>
+                <span className=" text-[12px]">(Description)</span>
               </p>
             </div>
           </div>
@@ -202,19 +181,15 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
             <p className="font-bold">Fire Code Fees:</p>
             <div className="flex space-x-1">
               <p className="text-nowrap">Amount Paid:</p>
-              <p className="w-full border-b-2 border-black text-end">
-                {info.amountPaid}
-              </p>
+              <p className="w-full text-black text-end">{info.amountPaid}</p>
             </div>
             <div className="flex space-x-1">
               <p className="text-nowrap">O.R. Number:</p>
-              <p className="w-full border-b-2 border-black text-end">
-                {info.orNumber}
-              </p>
+              <p className="w-full text-black text-end">{info.orNumber}</p>
             </div>
             <div className="flex space-x-1">
               <p className="text-nowrap">Date:</p>
-              <p className="w-full border-b-2 border-black text-end">
+              <p className="w-full text-black text-end">
                 {info?.orDate
                   ? format(parseISO(info.orDate), "MM/dd/yyyy")
                   : ""}
@@ -225,13 +200,11 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
           {/* Signatures */}
           <div className="leading-[1.15]">
             <p className="mb-[13px] font-bold">RECOMMEND APPROVAL:</p>
-            <p className="w-full border-b-2 border-black text-center">
-              {info.chiefFSES}
-            </p>
+            <p className="w-full text-black text-center">{info.chiefFSES}</p>
             <p>CHIEF, Fire Safety Enforcement Section</p>
             <p className="mt-[26px] font-bold mb-[13px]">APPROVED:</p>
             <div>
-              <p className="w-full border-b-2 border-black text-center">
+              <p className="w-full text-black text-center">
                 {info.fireMarshal}
               </p>
               <p className="text-center">CITY/MUNICIPAL FIRE MARSHAL</p>
@@ -248,16 +221,16 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
           <p className="text-[19px] mt-1">
             THIS CERTIFICATE SHALL BE POSTED CONSPICUOUSLY
           </p>
-          <p className="text-red-700 text-[11px]">
+          <p className=" text-[11px]">
             PAALALA: &apos;MAHIGPIT NA IPINAGBABAWAL NG PAMUNUAN NG BUREAU OF
             FIRE PROTECTION SA MGA KAWANI NITO ANG MAGREKOMENDA NG ANUMANG BRAND
             NG FIRE EXTINGUISHER&apos;
           </p>
           <div className="flex ml-[-10px] gap-5">
-            <div className="border-[1px] text-[15px] border-black font-bold mt-2 pt-1 pb-3 pr-20 ml-[-50px] pl-1 ">
+            <div className="border-[1px] text-[15px]  font-bold mt-2 pt-1 pb-3 pr-20 ml-[-50px] pl-1 ">
               BFP COPY
             </div>
-            <p className="text-[19px] text-blue-950">
+            <p className="text-[19px] ">
               &apos;&apos;FIRE SAFETY IS OUR MAIN CONCERN&apos;&apos;
             </p>
           </div>
