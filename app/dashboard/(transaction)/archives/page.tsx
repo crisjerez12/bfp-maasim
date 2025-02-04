@@ -46,7 +46,6 @@ interface Establishment {
 
 export default function EstablishmentRestoreForm() {
   const [highRise, setHighRise] = useState<string>("");
-  const [eminentDanger, setEminentDanger] = useState<string>("");
   const [barangay, setBarangay] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [rows, setRows] = useState<string>("5");
@@ -87,18 +86,10 @@ export default function EstablishmentRestoreForm() {
         .includes(searchTerm.toLowerCase());
       const matchesHighRise =
         highRise === "" || establishment.isHighRise.toString() === highRise;
-      const matchesEminentDanger =
-        eminentDanger === "" ||
-        establishment.isInEminentDanger.toString() === eminentDanger;
       const matchesBarangay =
         barangay === "" || establishment.barangay === barangay;
 
-      return (
-        matchesSearchTerm &&
-        matchesHighRise &&
-        matchesEminentDanger &&
-        matchesBarangay
-      );
+      return matchesSearchTerm && matchesHighRise && matchesBarangay;
     });
 
     setEstablishments(filteredEstablishments);
@@ -107,7 +98,6 @@ export default function EstablishmentRestoreForm() {
 
   const handleRefresh = () => {
     setHighRise("");
-    setEminentDanger("");
     setBarangay("");
     setSearchTerm("");
     fetchEstablishments();
@@ -150,7 +140,7 @@ export default function EstablishmentRestoreForm() {
   return (
     <div className="min-h-screen text-gray-100 ">
       <div className="bg-gray-800  md:p-6 mb-4 sm:mb-6 rounded-lg shadow-md">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label
               htmlFor="highRise"
@@ -162,25 +152,6 @@ export default function EstablishmentRestoreForm() {
               id="highRise"
               value={highRise}
               onChange={(e) => setHighRise(e.target.value)}
-              className="w-full bg-gray-700 text-gray-100 border border-gray-600 rounded px-3 py-2"
-            >
-              <option value="">All</option>
-              <option value="true">Yes</option>
-              <option value="false">No</option>
-            </select>
-          </div>
-
-          <div>
-            <label
-              htmlFor="eminentDanger"
-              className="block text-sm font-medium text-gray-300 mb-1"
-            >
-              Eminent Danger
-            </label>
-            <select
-              id="eminentDanger"
-              value={eminentDanger}
-              onChange={(e) => setEminentDanger(e.target.value)}
               className="w-full bg-gray-700 text-gray-100 border border-gray-600 rounded px-3 py-2"
             >
               <option value="">All</option>

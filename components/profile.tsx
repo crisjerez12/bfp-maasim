@@ -31,7 +31,9 @@ const ProfileCard = ({ sidebarOpen }: ProfileCardProps) => {
         />
 
         <div className="flex flex-col text-gray-950">
-          <p className="text-md font-semibold">{user?.Name || "Guest"}</p>
+          <p className="text-md font-semibold capitalize">
+            {user?.Name || "Guest"}
+          </p>
           <p className="text-sm font-medium uppercase">{user?.role || "N/A"}</p>
         </div>
       </div>

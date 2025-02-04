@@ -28,11 +28,21 @@ import { useToast } from "@/hooks/use-toast";
 import {
   deleteEstablishment,
   updateCompliance,
+  addRemark,
 } from "@/app/actions/establishment-actions";
 import Loading from "./loading";
 import { PaymentStatusDialog } from "@/components/PaymentStatusDialog";
 import { CertificateDialog } from "@/components/CertificateDialog";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface FSICData {
   _id: string;
@@ -63,6 +73,13 @@ interface FSICData {
   compliance: string;
   dueDate?: { month: string; day: string };
   establishmentStatus?: string;
+  remarks: Remark[];
+}
+
+interface Remark {
+  date: string;
+  message: string;
+  _id: string;
 }
 
 export default function FSICDetails() {
@@ -71,6 +88,7 @@ export default function FSICDetails() {
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCertDialogOpen, setIsCertDialogOpen] = useState(false);
+  const [isRemarkDialogOpen, setIsRemarkDialogOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const params = useParams();
@@ -165,16 +183,35 @@ export default function FSICDetails() {
 
   const handlePaymentStatusUpdate = (data: {
     id: string;
-    dueDate: { month: string; day: string };
     inspectionDate: Date | undefined;
-    establishmentStatus: string;
   }) => {
     setFsicData((prevData) => ({
       ...prevData!,
-      dueDate: data.dueDate,
       inspectionDate: data.inspectionDate,
-      establishmentStatus: data.establishmentStatus,
     }));
+  };
+
+  const handleAddRemark = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const message = formData.get("message") as string;
+    if (!message || !fsicData) return;
+
+    const result = await addRemark(fsicData._id, message);
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "Remark added successfully, Please reload the page to see",
+        variant: "success",
+      });
+      setIsRemarkDialogOpen(false);
+    } else {
+      toast({
+        title: "Error",
+        description: result.message,
+        variant: "destructive",
+      });
+    }
   };
 
   if (!fsicData) {
@@ -192,7 +229,7 @@ export default function FSICDetails() {
 
         <h1 className="text-3xl font-bold">FSIC Details</h1>
         <div className="flex justify-between items-center mb-6 mt-4">
-          <div className="flex  flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
             <PaymentStatusDialog
               id={fsicData._id}
               onStatusUpdate={handlePaymentStatusUpdate}
@@ -204,6 +241,52 @@ export default function FSICDetails() {
             >
               <FileText className="mr-2 h-4 w-4" /> Certificate
             </Button>
+
+            <Button
+              onClick={() => setIsRemarkDialogOpen(true)}
+              className="bg-purple-600 hover:bg-purple-500 text-white transition-colors duration-200"
+            >
+              Add Remark
+            </Button>
+
+            <Dialog
+              open={isRemarkDialogOpen}
+              onOpenChange={setIsRemarkDialogOpen}
+            >
+              <DialogContent className="bg-gray-800 text-gray-100 border border-gray-600">
+                <DialogHeader>
+                  <DialogTitle>Add Remark</DialogTitle>
+                  <DialogDescription className="text-gray-400">
+                    Enter a new remark for this establishment.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleAddRemark}>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="message"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Remark Message
+                      </label>
+                      <Input
+                        id="message"
+                        name="message"
+                        placeholder="Enter your remark here"
+                        className="bg-gray-700 border-gray-600 text-white"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full bg-purple-600 hover:bg-purple-500 text-white transition-colors duration-200"
+                    >
+                      Submit Remark
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+
             <Link href={`${params.id}/edit`} passHref>
               <Button className="bg-green-600 hover:bg-green-500 text-white transition-colors duration-200">
                 <Edit className="mr-2 h-4 w-4" /> Edit
@@ -484,6 +567,40 @@ export default function FSICDetails() {
             </CardContent>
           </Card>
         </div>
+        <Card className="col-span-full bg-gradient-to-br from-gray-800 to-gray-700 border-gray-600 shadow-lg text-white mt-6">
+          <CardHeader className="border-b border-gray-600 pb-4">
+            <CardTitle className="flex items-center text-xl font-semibold">
+              <FileText className="mr-2 h-5 w-5 text-indigo-400" />
+              Remarks
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {fsicData.remarks && fsicData.remarks.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-white">Date</TableHead>
+                    <TableHead className="text-white">Message</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {fsicData.remarks.map((remark) => (
+                    <TableRow key={remark._id}>
+                      <TableCell className="text-white">
+                        {new Date(remark.date).toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-white">
+                        {remark.message}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-gray-400">No existing remarks yet</p>
+            )}
+          </CardContent>
+        </Card>
         <CertificateDialog
           isOpen={isCertDialogOpen}
           onClose={() => setIsCertDialogOpen(false)}

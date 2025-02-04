@@ -44,13 +44,6 @@ const EstablishmentSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   __v: z.number(),
-  inspectionDate: z.string().optional(),
-  dueDate: z
-    .object({
-      month: z.string(),
-      day: z.string(),
-    })
-    .optional(),
 });
 
 type EstablishmentDocument = z.infer<typeof EstablishmentSchema>;
@@ -113,7 +106,6 @@ const MyDocument: React.FC<{ data: EstablishmentDocument[] }> = ({ data }) => (
           <Text style={styles.headerCell}>High Rise</Text>
           <Text style={styles.headerCell}>Eminent Danger</Text>
           <Text style={styles.headerCell}>Compliance</Text>
-          <Text style={styles.headerCell}>Payment Status</Text>
           <Text style={styles.headerCell}>Last Update</Text>
           <Text style={styles.headerCell}>Contact #</Text>
           <Text style={styles.headerCell}>Active Status</Text>
@@ -130,7 +122,6 @@ const MyDocument: React.FC<{ data: EstablishmentDocument[] }> = ({ data }) => (
               {item.isInEminentDanger ? "Yes" : "No"}
             </Text>
             <Text style={styles.cell}>{item.compliance}</Text>
-            <Text style={styles.cell}>{item.establishmentStatus}</Text>
             <Text style={styles.cell}>
               {new Date(item.updatedAt).toLocaleDateString()}
             </Text>

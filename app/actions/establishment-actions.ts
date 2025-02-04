@@ -2,10 +2,11 @@
 
 import Establishment, { EstablishmentSchema } from "@/lib/models/establishment";
 import connectToMongoDB from "@/lib/connection";
-export type Due = {
-  month: string;
-  day: string;
-};
+import { getCurrentMonthAndDay } from "@/lib/constants";
+// export type Due = {
+//   month: string;
+//   day: string;
+// };
 export async function createFsicEntry(formData: FormData) {
   await connectToMongoDB();
   const rawFormData = Object.fromEntries(formData);
@@ -20,8 +21,8 @@ export async function createFsicEntry(formData: FormData) {
       ? new Date(rawFormData.lastIssuanceDate as string)
       : undefined,
   };
-
-  const result = EstablishmentSchema.safeParse(parsedData);
+  const dueDateAdded = { dueDate: getCurrentMonthAndDay(), ...parsedData };
+  const result = EstablishmentSchema.safeParse(dueDateAdded);
   if (!result.success) {
     const errorMessages = result.error.errors.map((err) => ({
       path: err.path.join("."),
@@ -29,7 +30,6 @@ export async function createFsicEntry(formData: FormData) {
     }));
     return { success: false, errorMessages };
   }
-
   try {
     const existingEstablishment = await Establishment.findOne({
       fsicNumber: result.data.fsicNumber,
@@ -40,7 +40,6 @@ export async function createFsicEntry(formData: FormData) {
         message: `An establishment with FSIC number ${result.data.fsicNumber} already exists.`,
       };
     }
-
     const newEstablishment = new Establishment(result.data);
     await newEstablishment.save();
 
@@ -161,12 +160,10 @@ export async function deleteEstablishment(id: string) {
     };
   }
 }
-export async function updatePaymentStatus(
+export async function setInspectionDate(
   id: string,
   data: {
-    dueDate: { month: string; day: string };
     inspectionDate: Date | undefined;
-    establishmentStatus: string;
   }
 ) {
   await connectToMongoDB();
@@ -178,9 +175,7 @@ export async function updatePaymentStatus(
       return { success: false, message: "Establishment not found" };
     }
 
-    establishment.dueDate = data.dueDate;
     establishment.inspectionDate = data.inspectionDate;
-    establishment.establishmentStatus = data.establishmentStatus;
 
     const validationResult = EstablishmentSchema.safeParse(
       establishment.toObject()
@@ -233,5 +228,22 @@ export async function updateCompliance(id: string) {
       success: false,
       message: "An error occurred while updating compliance",
     };
+  }
+}
+export async function addRemark(id: string, message: string) {
+  try {
+    const establishment = await Establishment.findById(id);
+    if (!establishment) {
+      return { success: false, message: "Establishment not found" };
+    }
+
+    establishment.remarks = establishment.remarks || [];
+    establishment.remarks.push({ date: new Date(), message });
+    await establishment.save();
+
+    return { success: true, message: "Remark added successfully" };
+  } catch (error) {
+    console.error("Error adding remark:", error);
+    return { success: false, message: "Failed to add remark" };
   }
 }

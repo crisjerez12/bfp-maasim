@@ -62,7 +62,6 @@ export const EstablishmentSchema = z.object({
   mobile: z.string().refine((val) => val !== undefined, {
     message: "This field is required",
   }),
-  establishmentStatus: z.string().default("Pending"),
   isActive: z.boolean().default(true),
   dueDate: z
     .object({
@@ -71,6 +70,14 @@ export const EstablishmentSchema = z.object({
     })
     .optional(),
   inspectionDate: z.date().optional(),
+  remarks: z
+    .array(
+      z.object({
+        date: z.date(),
+        message: z.string(),
+      })
+    )
+    .optional(),
 });
 
 // Mongoose schema
@@ -116,6 +123,12 @@ const establishmentSchema = new mongoose.Schema(
       day: { type: String, default: null },
     },
     inspectionDate: { type: Date, require: false },
+    remarks: [
+      {
+        date: { type: Date, required: false },
+        message: { type: String, required: false },
+      },
+    ],
   },
   {
     timestamps: true,

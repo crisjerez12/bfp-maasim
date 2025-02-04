@@ -9,7 +9,6 @@ export async function GET() {
     // Get the current date
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
-    console.log(typeof new Date(currentDate.getTime() + 24 * 60 * 60 * 1000));
     // Find establishments with inspection date matching the current date
     const establishments = await Establishment.find({
       inspectionDate: {
@@ -18,7 +17,6 @@ export async function GET() {
       },
       isActive: true,
     });
-
     // Format the response
     const formattedEstablishments = establishments.map((est) => ({
       dueDate: {
