@@ -30,7 +30,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
     .padStart(7, "0")
     .replace(/(\d{3})$/, "-$1");
   return (
-    <div className="pt-[0.79cm] px-[0.55cm] w-[21cm] h-[29.7cm] bg-white font-arial text-white">
+    <div className="pt-[0.79cm] px-[0.55cm] w-[21.59cm]  font-arial text-white">
       <div className="relative px-[1.7cm] border-double border-4 border-white ">
         <div className="flex justify-center">
           <Image
@@ -100,10 +100,11 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
               <div className="w-[0.42cm] h-[0.43cm]   flex items-center justify-center "></div>
               <p>FOR BUSINESS PERMIT (NEW/RENEWAL)</p>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-[0.42cm] h-[0.43cm]  flex items-center justify-center "></div>
-              <div className="flex space-x-1 min-w-[300px]">
-                <p>OTHERS</p>
+            <div className="flex items-center space-x-2 ">
+              <div className="w-[0.42cm] h-[0.43cm]  flex items-center justify-center  "></div>
+              <div className="flex space-x-1 min-w-[300px] ">
+                <p className="">OTHERS</p>
+                <p className="text-black">{info.otherPurpose || ""}</p>
               </div>
             </div>
           </div>
@@ -227,17 +228,13 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
             NG FIRE EXTINGUISHER&apos;
           </p>
           <div className="flex ml-[-10px] gap-5">
-            <div className="border-[1px] text-[15px]  font-bold mt-2 pt-1 pb-3 pr-20 ml-[-50px] pl-1 ">
+            <div className=" text-[15px]  font-bold mt-2 pt-1 pb-3 pr-20 ml-[-50px] pl-1 ">
               BFP COPY
             </div>
             <p className="text-[19px] ">
               &apos;&apos;FIRE SAFETY IS OUR MAIN CONCERN&apos;&apos;
             </p>
           </div>
-        </div>
-
-        <div className="absolute bottom-[-30px] left-2">
-          BFP-QSF-FSED-005 Rev. 03
         </div>
       </div>
     </div>
