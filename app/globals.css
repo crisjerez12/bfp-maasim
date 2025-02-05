@@ -201,3 +201,7 @@ input {
   -webkit-box-shadow: 0px 0px 0px 4px rgba(0, 0, 0, 1);
   -moz-box-shadow: 0px 0px 0px 4px rgba(0, 0, 0, 1);
 }
+.multi-line {
+  line-height: 28px;
+  word-break: break-word;
+}

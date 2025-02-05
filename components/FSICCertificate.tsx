@@ -147,14 +147,9 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
           <p className="text-center text-[12px] italic">(Address)</p>
 
           <div className="mt-12">
-            <p
-              className={`w-full whitespace-pre-wrap text-black leading-[28px] px-10 ${
-                info.description.includes("\n") ? "indent-[250px]" : ""
-              }`}
-            >
+            <p className="w-full whitespace-pre-wrap text-black indent-[245px] h-14 align-text-top leading-[28px] px-10 ">
               {info.description}
             </p>
-
             <p className="text-black text-end mt-[-20px] pr-8">{newDate}</p>
           </div>
         </div>
