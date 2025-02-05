@@ -93,7 +93,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
             </p>
           </div>
           <div className="flex flex-col items-center">
-            <div className="pr-8 decoration-2  text-center font-bold text-[15px] text-black">
+            <div className="pr-8 decoration-2  text-center font-bold text-[15px] text-black pt-1">
               {format(new Date(), "MM/dd/yyyy")}
             </div>
             <p>Date</p>
