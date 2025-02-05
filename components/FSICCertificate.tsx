@@ -51,7 +51,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
           alt="certificate"
           width={2550}
           height={3300}
-          className="absolute top-[-25px] z-0 opacity-0"
+          className="absolute top-[-25px] z-0 opacity-20"
         />
         <div className="flex justify-center mt-5">
           <Image
