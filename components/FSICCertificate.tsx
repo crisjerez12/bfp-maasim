@@ -99,7 +99,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
             <p>Date</p>
           </div>
         </div>
-        <div className=" flex pl-4 flex-col pt-6 text-center mb-6 items-center  leading-[1.15] font-bold">
+        <div className=" flex pl-2 flex-col text-center mb-6 items-center  leading-[1.15] font-bold">
           <div className="flex flex-col items-start text-[16px] space-y-[2px]">
             <div className="flex items-center space-y-1 pt-7 ">
               <div className="w-[0.42cm] h-[0.43cm]  flex items-center justify-center text-black">
@@ -125,7 +125,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
         </div>
 
         {/* Main Content */}
-        <div className="leading-[1.3] text-[13px] pt-6">
+        <div className="leading-[1.3] text-[13px] pt-24">
           <p className="w-full  text-center text-black">
             {info.establishmentName}
           </p>
