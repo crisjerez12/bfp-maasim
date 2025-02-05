@@ -155,7 +155,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
         </div>
 
         {/* Fire Code Fees */}
-        <div className="leading-[1.15] flex justify-between pt-36 pl-16 text-[13px]">
+        <div className="leading-[1.15] flex justify-between pt-28 pl-16 text-[13px]">
           <div>
             <div className="flex space-x-1">
               <p className="text-nowrap">Amount Paid:</p>
