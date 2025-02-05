@@ -45,7 +45,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
   return (
     <div className=" w-[21.59cm]  font-arial text-white">
       <div className=" px-[1.7cm] border-double border-4 border-white">
-        <div className="flex justify-center">
+        <div className="flex justify-center mt-8">
           <Image
             src={dilgLogo}
             alt="bfp-logo"
@@ -85,10 +85,10 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
           />
         </div>
         {/* Subheader */}
-        <div className=" flex px-11 justify-between ">
+        <div className=" flex px-11 justify-between mt-4">
           <div className="flex text-[20px] font-bold ">
             <p>FSIC NO. R</p>
-            <p className=" text-center decoration-2 text-red-600 pl-3">
+            <p className=" text-center decoration-2 text-red-600 pl-8">
               12-{formatedFSICNumber}
             </p>
           </div>
@@ -125,7 +125,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
         </div>
 
         {/* Main Content */}
-        <div className="leading-[1.3] text-[13px] pt-[45px]">
+        <div className="leading-[1.3] text-[13px] pt-20">
           <p className="w-full  text-center text-black">
             {info.establishmentName}
           </p>
@@ -155,7 +155,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
         </div>
 
         {/* Fire Code Fees */}
-        <div className="leading-[1.15] flex justify-between pt-16 pl-16 text-[13px]">
+        <div className="leading-[1.15] flex justify-between pt-28 pl-16 text-[13px]">
           <div>
             <div className="flex space-x-1">
               <p className="text-nowrap">Amount Paid:</p>
