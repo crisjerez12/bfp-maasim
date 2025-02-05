@@ -51,7 +51,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
           alt="certificate"
           width={2550}
           height={3300}
-          className="absolute top-[-25px] z-0 opacity-20"
+          className="absolute top-[-13px] z-0 opacity-20"
         />
         <div className="flex justify-center mt-5">
           <Image
@@ -61,7 +61,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
             height="91"
             className="rounded-full mt-8 absolute left-[50px] opacity-0"
           />
-          <div className="text-center  leading-tight mt-7">
+          <div className="text-center  leading-tight mt-10">
             <p className="text-[15px] text-white">
               Republic of the Philippines
             </p>
