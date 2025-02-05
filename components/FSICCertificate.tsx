@@ -2,6 +2,7 @@ import React from "react";
 import { format, parseISO } from "date-fns";
 import Image from "next/image";
 import dilgLogo from "@/public/dilg-logo.svg";
+import certificate from "@/public/cert.jpg";
 export interface CertificateInfo {
   fsicNumber: string;
   establishmentName: string;
@@ -44,8 +45,15 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
 
   return (
     <div className=" w-[21.59cm]  font-arial text-white">
-      <div className=" px-[1.7cm] border-double border-4 border-white">
-        <div className="flex justify-center mt-7">
+      <div className=" px-[1.7cm  relative">
+        <Image
+          src={certificate}
+          alt="certificate"
+          width={2550}
+          height={3300}
+          className="absolute top-[-25px] z-0 opacity-0"
+        />
+        <div className="flex justify-center mt-5">
           <Image
             src={dilgLogo}
             alt="bfp-logo"
@@ -53,7 +61,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
             height="91"
             className="rounded-full mt-8 absolute left-[50px] opacity-0"
           />
-          <div className="text-center  leading-tight mt-10">
+          <div className="text-center  leading-tight mt-7">
             <p className="text-[15px] text-white">
               Republic of the Philippines
             </p>
@@ -85,10 +93,10 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
           />
         </div>
         {/* Subheader */}
-        <div className=" flex px-12 mt-[-2px] justify-between">
+        <div className=" flex pl-32 mt-2 pr-28 justify-between">
           <div className="flex text-[20px] font-bold ">
             <p>FSIC NO. R</p>
-            <p className=" text-center decoration-2 text-red-600 pl-6 pb-1">
+            <p className=" text-center decoration-2 text-red-600  pb-1">
               12-{formatedFSICNumber}
             </p>
           </div>
@@ -99,7 +107,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
             <p>Date</p>
           </div>
         </div>
-        <div className=" flex pl-2 flex-col text-center mt-4 mb-6 items-center  leading-[1.15] font-bold">
+        <div className=" flex  flex-col text-center mt-5 mb-6 items-center  leading-[1.15] font-bold">
           <div className="flex flex-col items-start text-[16px] space-y-[2px]">
             <div className="flex items-center space-y-1 pt-7 ">
               <div className="w-[0.42cm] h-[0.43cm]  flex items-center justify-center text-black">
@@ -125,7 +133,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
         </div>
 
         {/* Main Content */}
-        <div className="leading-[1.3] text-[13px] pt-12">
+        <div className="leading-[1.3] text-[13px] pt-[60px]">
           <p className="w-full  text-center text-black">
             {info.establishmentName}
           </p>
@@ -146,16 +154,16 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
           </p>
           <p className="text-center text-[12px] italic">(Address)</p>
 
-          <div className="mt-[50px]">
-            <p className="w-full whitespace-pre-wrap text-black indent-[245px] h-14 align-text-top leading-[28px] px-10 ">
+          <div className="mt-[53px] pl-12 pr-24">
+            <p className="w-full whitespace-pre-wrap  text-black indent-[245px] h-14 align-text-top leading-[28px] px-10 ">
               {info.description}
             </p>
-            <p className="text-black text-end mt-[-22px] pr-8">{newDate}</p>
+            <p className="text-black text-end mt-[-24px] ">{newDate}</p>
           </div>
         </div>
 
         {/* Fire Code Fees */}
-        <div className="leading-[1.15] flex justify-between pt-20 pl-16 text-[13px]">
+        <div className="leading-[1.15] flex justify-between mt-24 pt-1 pl-34 pr-16 text-[13px]">
           <div>
             <div className="flex space-x-1">
               <p className="text-nowrap">Amount Paid:</p>

@@ -205,3 +205,9 @@ input {
   line-height: 28px;
   word-break: break-word;
 }
+.backgroundImage {
+  background-image: url("../public/cert.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
