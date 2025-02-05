@@ -51,7 +51,6 @@ export function CertificateDialog({
       defaultValues?.purpose || "FOR CERTIFICATE OF OCCUPANCY"
     ).toUpperCase(),
     otherPurpose: (defaultValues?.otherPurpose || "").toUpperCase(),
-    certificateType: (defaultValues?.certificateType || "").toUpperCase(),
     amountPaid: (defaultValues?.amountPaid || "").toUpperCase(),
     orNumber: (defaultValues?.orNumber || "").toUpperCase(),
     chiefFSES: (defaultValues?.chiefFSES || "").toUpperCase(),

@@ -13,7 +13,6 @@ export interface CertificateInfo {
   orNumber: string;
   chiefFSES: string;
   fireMarshal: string;
-  certificateType: string;
   description: string;
   orDate?: string;
 }
@@ -41,12 +40,11 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
 
     return formattedDate;
   }
-
   const newDate = addOneYear();
 
   return (
     <div className=" w-[21.59cm]  font-arial text-white">
-      <div className="relative px-[1.7cm] border-double border-4 border-white ">
+      <div className=" px-[1.7cm] border-double border-4 border-white">
         <div className="flex justify-center">
           <Image
             src={dilgLogo}
@@ -104,22 +102,18 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
         <div className=" flex flex-col mt-4 text-center mb-6 items-center  leading-[1.15] font-bold">
           <div className="flex flex-col items-start text-[16px] space-y-[2px]">
             <div className="flex items-center space-y-1 pt-7 ">
-              <div className="w-[0.42cm] h-[0.43cm]  flex items-center justify-center ">
-                {info.certificateType === "FOR CERTIFICATE OF OCCUPANCY"
-                  ? "✔️"
-                  : ""}
+              <div className="w-[0.42cm] h-[0.43cm]  flex items-center justify-center text-black">
+                {info.purpose === "FOR CERTIFICATE OF OCCUPANCY" && "✔️"}
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-[0.42cm] h-[0.43cm]  flex items-center justify-center ">
-                {info.certificateType === "FOR BUSINESS PERMIT (NEW/RENEWAL)"
-                  ? "✔️"
-                  : ""}
+              <div className="w-[0.42cm] h-[0.43cm]  flex items-center justify-center text-black">
+                {info.purpose === "FOR BUSINESS PERMIT (NEW/RENEWAL)" && "✔️"}
               </div>
             </div>
             <div className="flex items-center space-x-2 ">
-              <div className="w-[0.42cm] h-[0.43cm]  flex items-center justify-center  ">
-                {info.certificateType === "OTHERS" ? "✔️" : ""}
+              <div className="w-[0.42cm] h-[0.43cm]  flex items-center justify-center text-black ">
+                {info.purpose === "OTHERS" && "✔️"}
               </div>
               <div className="flex space-x-1 min-w-[300px]">
                 <p className="text-black pl-[66px] ">
@@ -153,9 +147,14 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
           <p className="text-center text-[12px] italic">(Address)</p>
 
           <div className="mt-12">
-            <p className="w-full whitespace-pre-wrap text-black indent-[250px] leading-[28px] px-10">
+            <p
+              className={`w-full whitespace-pre-wrap text-black leading-[28px] px-10 ${
+                info.description.includes("\n") ? "indent-[250px]" : ""
+              }`}
+            >
               {info.description}
             </p>
+
             <p className="text-black text-end mt-[-20px] pr-8">{newDate}</p>
           </div>
         </div>
@@ -176,7 +175,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
               <p className="w-full text-black text-end">
                 {info?.orDate
                   ? format(parseISO(info.orDate), "MM/dd/yyyy")
-                  : ""}
+                  : "N/A"}
               </p>
             </div>
           </div>

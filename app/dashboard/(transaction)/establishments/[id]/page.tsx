@@ -603,7 +603,6 @@ export default function FSICDetails() {
             setIsCertDialogOpen(false);
           }}
           defaultValues={{
-            certificateType: "",
             amountPaid: "",
             orNumber: "",
             chiefFSES: "",
