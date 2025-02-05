@@ -88,7 +88,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
         <div className=" flex px-12 mt-[-2px] justify-between">
           <div className="flex text-[20px] font-bold ">
             <p>FSIC NO. R</p>
-            <p className=" text-center decoration-2 text-red-600 pl-5 pb-1">
+            <p className=" text-center decoration-2 text-red-600 pl-6 pb-1">
               12-{formatedFSICNumber}
             </p>
           </div>
