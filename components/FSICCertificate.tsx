@@ -53,7 +53,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
             height="91"
             className="rounded-full mt-8 absolute left-[50px] opacity-0"
           />
-          <div className="text-center  leading-tight mt-11">
+          <div className="text-center  leading-tight mt-10">
             <p className="text-[15px] text-white">
               Republic of the Philippines
             </p>
@@ -88,7 +88,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
         <div className=" flex px-11 justify-between">
           <div className="flex text-[20px] font-bold ">
             <p>FSIC NO. R</p>
-            <p className=" text-center decoration-2 text-red-600 pl-7">
+            <p className=" text-center decoration-2 text-red-600 pl-7 pb-1">
               12-{formatedFSICNumber}
             </p>
           </div>
@@ -99,7 +99,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
             <p>Date</p>
           </div>
         </div>
-        <div className=" flex pl-2 flex-col text-center mb-6 items-center  leading-[1.15] font-bold">
+        <div className=" flex pl-2 flex-col text-center mt-4 mb-6 items-center  leading-[1.15] font-bold">
           <div className="flex flex-col items-start text-[16px] space-y-[2px]">
             <div className="flex items-center space-y-1 pt-7 ">
               <div className="w-[0.42cm] h-[0.43cm]  flex items-center justify-center text-black">
@@ -125,7 +125,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
         </div>
 
         {/* Main Content */}
-        <div className="leading-[1.3] text-[13px] pt-24">
+        <div className="leading-[1.3] text-[13px] pt-16">
           <p className="w-full  text-center text-black">
             {info.establishmentName}
           </p>
