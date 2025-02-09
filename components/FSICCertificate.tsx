@@ -2,7 +2,7 @@ import React from "react";
 import { format, parseISO } from "date-fns";
 import Image from "next/image";
 import dilgLogo from "@/public/dilg-logo.svg";
-import certificate from "@/public/cert.jpg";
+// import certificate from "@/public/cert.jpg";
 export interface CertificateInfo {
   fsicNumber: string;
   establishmentName: string;
@@ -44,16 +44,17 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
   const newDate = addOneYear();
 
   return (
-    <div className=" w-[21.59cm]  font-arial text-white">
-      <div className=" px-[1.7cm  relative">
-        <Image
+    <div className="relative w-screen h-[28.194cm] font-arial text-white">
+    {/* <div className="relative w-[21.844cm] h-[28.194cm] font-arial text-white"> */}
+      <div>
+        {/* <Image
           src={certificate}
           alt="certificate"
-          width={2550}
-          height={3300}
-          className="absolute top-[-13px] z-0 opacity-20"
-        />
-        <div className="flex justify-center mt-5">
+          layout="fill"
+          objectFit="cover"
+          className="absolute mt-[-13px] inset-0 z-0 opacity-20"
+        /> */}
+        <div className="flex justify-center mt-5 ">
           <Image
             src={dilgLogo}
             alt="bfp-logo"
@@ -61,7 +62,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
             height="91"
             className="rounded-full mt-8 absolute left-[50px] opacity-0"
           />
-          <div className="text-center  leading-tight mt-10">
+          <div className="text-center  leading-tight mt-9">
             <p className="text-[15px] text-white">
               Republic of the Philippines
             </p>
@@ -93,10 +94,10 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
           />
         </div>
         {/* Subheader */}
-        <div className=" flex pl-32 mt-2 pr-28 justify-between">
+        <div className=" flex pl-32 mt-1 pr-28 justify-between">
           <div className="flex text-[20px] font-bold ">
             <p>FSIC NO. R</p>
-            <p className=" text-center decoration-2 text-red-600  pb-1">
+            <p className=" text-center decoration-2 text-red-600">
               12-{formatedFSICNumber}
             </p>
           </div>
@@ -108,23 +109,23 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
           </div>
         </div>
         <div className=" flex  flex-col text-center mt-5 mb-6 items-center  leading-[1.15] font-bold">
-          <div className="flex flex-col items-start text-[16px] space-y-[2px]">
-            <div className="flex items-center space-y-1 pt-7 ">
-              <div className="w-[0.42cm] h-[0.43cm]  flex items-center justify-center text-black">
+          <div className="flex flex-col items-start -ml-[12px] text-sm">
+            <div className="flex items-center mt-6 ">
+              <div className="w-[0.42cm] h-[0.43cm] flex items-center justify-center text-black">
                 {info.purpose === "FOR CERTIFICATE OF OCCUPANCY" && "✔️"}
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center mt-[1px]">
               <div className="w-[0.42cm] h-[0.43cm]  flex items-center justify-center text-black">
                 {info.purpose === "FOR BUSINESS PERMIT (NEW/RENEWAL)" && "✔️"}
               </div>
             </div>
-            <div className="flex items-center space-x-2 ">
+            <div className="flex items-center">
               <div className="w-[0.42cm] h-[0.43cm]  flex items-center justify-center text-black ">
                 {info.purpose === "OTHERS" && "✔️"}
               </div>
-              <div className="flex space-x-1 min-w-[300px]">
-                <p className="text-black pl-[66px] ">
+              <div className="flex min-w-[300px] ">
+                <p className="text-black text-[16px] -mt-[1px] pl-[75px] ">
                   {info.otherPurpose || ""}
                 </p>
               </div>
@@ -133,7 +134,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
         </div>
 
         {/* Main Content */}
-        <div className="leading-[1.3] text-[13px] pt-[60px]">
+        <div className="leading-[1.3] text-[13px] mt-20">
           <p className="w-full  text-center text-black">
             {info.establishmentName}
           </p>
@@ -154,16 +155,16 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
           </p>
           <p className="text-center text-[12px] italic">(Address)</p>
 
-          <div className="mt-[53px] pl-12 pr-24">
+          <div className="mt-[52px] pl-12 pr-24">
             <p className="w-full whitespace-pre-wrap  text-black indent-[245px] h-14 align-text-top leading-[28px] px-10 ">
               {info.description}
             </p>
-            <p className="text-black text-end mt-[-24px] ">{newDate}</p>
+            <p className="text-black text-end mt-[-25px] ">{newDate}</p>
           </div>
         </div>
 
         {/* Fire Code Fees */}
-        <div className="leading-[1.15] flex justify-between mt-24 pt-1 pl-48 pr-16 text-[13px]">
+        <div className="leading-[1.15] flex justify-between mt-[90px] pt-1 pl-48 pr-16 text-[13px]">
           <div>
             <div className="flex space-x-1">
               <p className="text-nowrap">Amount Paid:</p>
@@ -189,7 +190,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
               {info.chiefFSES}
             </p>
             <div>
-              <p className="w-full text-black text-center mt-[75px] ">
+              <p className="w-full text-black text-center mt-[72px] ">
                 {info.fireMarshal}
               </p>
             </div>
