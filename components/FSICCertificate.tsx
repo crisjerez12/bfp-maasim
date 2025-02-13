@@ -1,7 +1,7 @@
 import React from "react";
 import { format, parseISO } from "date-fns";
 import Image from "next/image";
-import dilgLogo from "@/public/dilg-logo.svg";
+// import dilgLogo from "@/public/dilg-logo.svg";
 import certificate from "@/public/cert.jpg";
 export interface CertificateInfo {
   fsicNumber: string;
@@ -44,14 +44,14 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
   const newDate = addOneYear();
 
   return (
-    <div>
-      {/* <Image
+    <div className="relative">
+      <Image
         src={certificate}
         alt="certificate"
         width={2200}
         height={2000}
         className="absolute -top-[16px] opacity-20"
-      /> */}
+      />
       <div className=" w-[21.59cm] h-[27.94 cm] font-arial text-white">
         <div className="flex justify-center mt-6 ">
           <div className="text-center  leading-tight mt-9">

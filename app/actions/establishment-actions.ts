@@ -57,6 +57,7 @@ export async function updateFsicEntry(formData: FormData) {
   const rawFormData = Object.fromEntries(formData);
   const id = rawFormData._id as string;
   delete rawFormData._id;
+  delete rawFormData.remarks;
   delete rawFormData.dueDate;
   delete rawFormData.inspectionDate;
 
