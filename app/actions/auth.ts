@@ -4,7 +4,7 @@ import connectToMongoDB from "@/lib/connection";
 import bcryptjs from "bcryptjs";
 import { cookies } from "next/headers";
 import { encrypt, decrypt } from "@/lib/encryption";
-import { TUser } from "@/lib/type";
+import type { TUser } from "@/lib/type";
 import UserModel from "@/lib/models/user";
 
 export async function authenticate(formData: FormData) {
@@ -153,4 +153,32 @@ export async function getAuthenticatedUser() {
 }
 export async function logout() {
   cookies().delete("authToken");
+}
+
+export async function deleteUser(userId: string) {
+  try {
+    await connectToMongoDB();
+
+    // Find the user
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return { success: false, message: "User not found" };
+    }
+
+    // Check if the user is an ADMIN
+    if (user.role === "ADMIN") {
+      return { success: false, message: "Cannot delete an ADMIN account" };
+    }
+
+    // Proceed with deletion if the user is STAFF
+    await UserModel.findByIdAndDelete(userId);
+
+    return { success: true, message: "User deleted successfully" };
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return {
+      success: false,
+      message: "An error occurred while deleting the user",
+    };
+  }
 }
