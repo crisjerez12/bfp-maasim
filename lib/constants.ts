@@ -29,13 +29,18 @@ export const TYPE_OF_OCCUPANCY: string[] = [
   "Place of Assembly Occupancy",
   "Residential Occupancy",
   "Single and Two Family Dwellings",
+  "N/A",
+  "Others",
 ];
 export const TYPE_OF_BUILDING: string[] = [
   "Public Building",
+  "Business Building",
   "Hospital",
   "High Rise",
   "Schools",
   "Assembly",
+  "N/A",
+  "Others",
 ];
 
 export const NATURE_OF_BUSINESS: string[] = ["RESIDENTIAL", "COMMERCIAL"];
