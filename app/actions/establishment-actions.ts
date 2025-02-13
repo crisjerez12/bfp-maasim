@@ -168,7 +168,6 @@ export async function setInspectionDate(
   }
 ) {
   await connectToMongoDB();
-
   try {
     const establishment = await Establishment.findById(id);
 
@@ -176,8 +175,14 @@ export async function setInspectionDate(
       return { success: false, message: "Establishment not found" };
     }
 
-    establishment.inspectionDate = data.inspectionDate;
+    // Add one day to the input date
+    if (data.inspectionDate) {
+      data.inspectionDate = new Date(data.inspectionDate);
+      data.inspectionDate.setDate(data.inspectionDate.getDate() + 1);
+    }
 
+    establishment.inspectionDate = data.inspectionDate;
+    console.log(establishment);
     const validationResult = EstablishmentSchema.safeParse(
       establishment.toObject()
     );
@@ -195,14 +200,14 @@ export async function setInspectionDate(
 
     return {
       success: true,
-      message: "Payment status updated successfully",
+      message: "Inspection date updated successfully",
       data: establishment,
     };
   } catch (error) {
-    console.error("Error updating payment status:", error);
+    console.error("Error updating inspection date:", error);
     return {
       success: false,
-      message: "An error occurred while updating the payment status",
+      message: "An error occurred while updating the inspection date",
     };
   }
 }

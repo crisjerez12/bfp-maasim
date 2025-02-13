@@ -33,6 +33,7 @@ export function PaymentStatusDialog({
     },
   });
   const onSubmit = async (data: FormData) => {
+    console.log(data);
     const submissionData = {
       inspectionDate: data.inspectionDate,
     };
