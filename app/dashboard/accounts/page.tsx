@@ -62,6 +62,7 @@ export default function AccountsPage() {
       if (result.success) {
         toast({
           title: "Success",
+          variant: "success",
           description: "User deleted successfully",
         });
         setUsers(users.filter((u) => u._id !== userToDelete._id));
