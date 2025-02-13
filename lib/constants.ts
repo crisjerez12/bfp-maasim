@@ -43,7 +43,12 @@ export const TYPE_OF_BUILDING: string[] = [
   "Others",
 ];
 
-export const NATURE_OF_BUSINESS: string[] = ["RESIDENTIAL", "COMMERCIAL"];
+export const NATURE_OF_BUSINESS: string[] = [
+  "RESIDENTIAL",
+  "COMMERCIAL",
+  "N/A",
+  "Others",
+];
 
 export const lastIssuanceOptions: string[] = [
   "Unknown",
