@@ -6,11 +6,12 @@ export async function GET() {
   try {
     await connectToMongoDB();
 
-    // Get the current date
+    // Get the current date and year
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
+    const currentYear = currentDate.getFullYear();
 
-    // Find establishments with due date in the current month
+    // Find establishments with due date in the current month and created before the current year
     const establishments = await Establishment.find({
       "dueDate.month": {
         $in: [
@@ -19,6 +20,7 @@ export async function GET() {
         ],
       },
       isActive: true,
+      createdAt: { $lt: new Date(currentYear, 0, 1) }, // Add this condition
     });
 
     // Format the response
