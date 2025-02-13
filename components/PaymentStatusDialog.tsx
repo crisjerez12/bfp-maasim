@@ -38,6 +38,7 @@ export function PaymentStatusDialog({
       inspectionDate: data.inspectionDate,
     };
     const res = await setInspectionDate(id, submissionData);
+    console.log(res);
     if (!res.success) {
       toast({
         title: "Unsuccessful",
