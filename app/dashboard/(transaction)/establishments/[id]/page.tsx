@@ -91,7 +91,6 @@ export default function FSICDetails() {
   const { toast } = useToast();
   const router = useRouter();
   const params = useParams();
-
   useEffect(() => {
     const fetchData = async () => {
       try {

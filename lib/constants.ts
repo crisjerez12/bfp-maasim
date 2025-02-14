@@ -61,8 +61,8 @@ export const lastIssuanceOptions: string[] = [
   "Notice To Comply",
   "Fire Safety Inspection Certificate (Business Permit) - Renewal",
 ];
-export function getCurrentMonthAndDay() {
-  const date = new Date();
+export function getCurrentMonthAndDay(data: Date | undefined) {
+  const getDate = data || new Date();
 
   const monthNames = [
     "January",
@@ -80,7 +80,7 @@ export function getCurrentMonthAndDay() {
   ];
 
   return {
-    month: monthNames[date.getMonth()],
-    day: date.getDate().toString(),
+    month: monthNames[getDate.getMonth()],
+    day: getDate.getDate().toString(),
   };
 }

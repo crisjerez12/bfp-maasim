@@ -3,10 +3,6 @@
 import Establishment, { EstablishmentSchema } from "@/lib/models/establishment";
 import connectToMongoDB from "@/lib/connection";
 import { getCurrentMonthAndDay } from "@/lib/constants";
-// export type Due = {
-//   month: string;
-//   day: string;
-// };
 export async function createFsicEntry(formData: FormData) {
   await connectToMongoDB();
   const rawFormData = Object.fromEntries(formData);
@@ -21,7 +17,10 @@ export async function createFsicEntry(formData: FormData) {
       ? new Date(rawFormData.lastIssuanceDate as string)
       : undefined,
   };
-  const dueDateAdded = { dueDate: getCurrentMonthAndDay(), ...parsedData };
+  const dueDateAdded = {
+    dueDate: getCurrentMonthAndDay(parsedData.lastIssuanceDate),
+    ...parsedData,
+  };
   const result = EstablishmentSchema.safeParse(dueDateAdded);
   if (!result.success) {
     const errorMessages = result.error.errors.map((err) => ({
@@ -61,6 +60,7 @@ export async function updateFsicEntry(formData: FormData) {
   delete rawFormData.dueDate;
   delete rawFormData.inspectionDate;
 
+  // Parse necessary fields
   const parsedData = {
     ...rawFormData,
     fsicNumber: Number(rawFormData.fsicNumber),
@@ -74,11 +74,22 @@ export async function updateFsicEntry(formData: FormData) {
       ? new Date(rawFormData.lastIssuanceDate as string)
       : undefined,
   };
+
+  // Normalize mobile number
   if (typeof parsedData.mobile === "string") {
     parsedData.mobile = parsedData.mobile.replace(/^(\+639|9)/, "9");
   }
+
+  // Prepare final form with computed due date
+  const finalForm = {
+    ...parsedData,
+    dueDate: getCurrentMonthAndDay(parsedData.lastIssuanceDate),
+  };
+
   try {
-    const validationResult = EstablishmentSchema.safeParse(parsedData);
+    // Validate data
+    const choice = parsedData.lastIssuanceDate ? finalForm : parsedData;
+    const validationResult = EstablishmentSchema.safeParse(choice);
     if (!validationResult.success) {
       const errors = validationResult.error.errors.map(
         (err) => `${err.path.join(".")}: ${err.message}`
@@ -89,6 +100,7 @@ export async function updateFsicEntry(formData: FormData) {
       };
     }
 
+    // Update establishment
     const updatedEstablishment = await Establishment.findByIdAndUpdate(
       id,
       validationResult.data,
@@ -182,7 +194,6 @@ export async function setInspectionDate(
     }
 
     establishment.inspectionDate = data.inspectionDate;
-    console.log(establishment);
     const validationResult = EstablishmentSchema.safeParse(
       establishment.toObject()
     );
@@ -236,6 +247,7 @@ export async function updateCompliance(id: string) {
     };
   }
 }
+
 export async function addRemark(id: string, message: string) {
   try {
     const establishment = await Establishment.findById(id);

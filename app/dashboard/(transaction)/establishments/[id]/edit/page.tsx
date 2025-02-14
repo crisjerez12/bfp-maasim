@@ -23,8 +23,8 @@ export default function FsicForm() {
   const router = useRouter();
   const [isHighRise, setIsHighRise] = useState<boolean>(false);
   const [isInEminentDanger, setIsInEminentDanger] = useState<boolean>(false);
-  const [lastIssuanceType, setLastIssuanceType] = useState<string>("");
-  const [lastIssuanceDate, setLastIssuanceDate] = useState<string>("");
+  const [lastIssuanceType, setLastIssuanceType] = useState<string | null>("");
+  // const [lastIssuanceDate, setLastIssuanceDate] = useState<string>("");
   const { toast } = useToast();
   const { id } = useParams();
   const {
@@ -67,6 +67,7 @@ export default function FsicForm() {
           variant: "destructive",
           description: "An unexpected error occurred. Please try again.",
         });
+      } finally {
       }
     }
   };
@@ -513,8 +514,8 @@ export default function FsicForm() {
                   disabled={
                     lastIssuanceType === "" || isSubmitting || isLoading
                   }
-                  value={lastIssuanceDate}
-                  onChange={(e) => setLastIssuanceDate(e.target.value)}
+                  // value={lastIssuanceDate}
+                  // onChange={(e) => setLastIssuanceDate(e.target.value)}
                   className="w-full bg-transparent border-b-2 border-gray-600 p-3 text-lg focus:outline-none focus:border-[#3b82f6] text-white"
                 />
               </FormField>

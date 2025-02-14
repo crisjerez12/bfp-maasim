@@ -20,7 +20,7 @@ export async function GET() {
         ],
       },
       isActive: true,
-      createdAt: { $lt: new Date(currentYear, 0, 1) }, // Add this condition
+      lastIssuanceDate: { $lt: new Date(currentYear, 0, 1) },
     });
 
     // Format the response

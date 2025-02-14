@@ -1,7 +1,6 @@
 import React from "react";
 import { format, parseISO } from "date-fns";
 import Image from "next/image";
-// import dilgLogo from "@/public/dilg-logo.svg";
 import certificate from "@/public/cert.jpg";
 export interface CertificateInfo {
   fsicNumber: string;
