@@ -49,7 +49,7 @@ const PrintableFSICCertificate: React.FC<PrintableFSICCertificateProps> = ({
         alt="certificate"
         width={2200}
         height={2000}
-        className="absolute -top-[16px] opacity-20"
+        className="absolute -top-[16px] opacity-0"
       />
       <div className=" w-[21.59cm] h-[27.94 cm] font-arial text-white">
         <div className="flex justify-center mt-6 ">
