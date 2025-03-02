@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+
 export const BARANGAY: string[] = [
   "Amsipit",
   "Bales",
@@ -83,4 +85,18 @@ export function getCurrentMonthAndDay(data: Date | undefined) {
     month: monthNames[getDate.getMonth()],
     day: getDate.getDate().toString(),
   };
+}
+
+export function getPHtime(dayProps: string | Date = new Date()): string {
+  const timeZone = "Asia/Manila";
+
+  const date = typeof dayProps === "string" ? new Date(dayProps) : dayProps;
+
+  if (isNaN(date.getTime())) {
+    throw new Error("Invalid date format");
+  }
+
+  const philippinesTime = new Date(date.toLocaleString("en-US", { timeZone }));
+
+  return format(philippinesTime, "yyyy-MM-dd");
 }

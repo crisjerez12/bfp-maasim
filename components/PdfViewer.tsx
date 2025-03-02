@@ -82,7 +82,6 @@ const styles = StyleSheet.create({
     borderBottomStyle: "solid",
     alignItems: "center",
     height: "auto",
-    fontStyle: "bold",
   },
   cell: {
     flex: 1,

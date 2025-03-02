@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import connectToMongoDB from "@/lib/connection";
 import Establishment from "@/lib/models/establishment";
+import { getPHtime } from "@/lib/constants";
 
 export async function GET() {
   try {
     await connectToMongoDB();
 
-    // Get the current date
-    const currentDate = new Date();
+    const currentDate = new Date(getPHtime());
     currentDate.setHours(0, 0, 0, 0);
-    // Find establishments with inspection date matching the current date
     const establishments = await Establishment.find({
       inspectionDate: {
         $gte: currentDate,
@@ -17,7 +16,6 @@ export async function GET() {
       },
       isActive: true,
     });
-    // Format the response
     const formattedEstablishments = establishments.map((est) => ({
       dueDate: {
         month: est.inspectionDate.toLocaleString("default", { month: "long" }),
